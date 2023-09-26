@@ -2,7 +2,7 @@ import config from 'config';
 import { Resend } from 'resend';
 import { renderEmailHtml, Template } from 'mailer';
 
-import { From, EmailServiceConstructorProps, SendTemplateParams, SendSendgridTemplateParams } from './email.types';
+import { EmailServiceConstructorProps, SendTemplateParams } from './email.types';
 
 class EmailService {
   apiKey: string | undefined;
