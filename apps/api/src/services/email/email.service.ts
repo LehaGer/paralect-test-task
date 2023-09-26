@@ -1,5 +1,5 @@
 import config from 'config';
-import sendgrid from '@sendgrid/mail';
+import { Resend } from 'resend';
 import { renderEmailHtml, Template } from 'mailer';
 
 import { From, EmailServiceConstructorProps, SendTemplateParams, SendSendgridTemplateParams } from './email.types';
@@ -7,13 +7,15 @@ import { From, EmailServiceConstructorProps, SendTemplateParams, SendSendgridTem
 class EmailService {
   apiKey: string | undefined;
 
-  from: From;
+  from: string;
+
+  resendInstance: Resend | undefined;
 
   constructor({ apiKey, from }: EmailServiceConstructorProps) {
     this.apiKey = apiKey;
-    this.from = from;
+    this.from = `${from.name} <${from.email}>`;
 
-    if (apiKey) sendgrid.setApiKey(apiKey);
+    if (apiKey) this.resendInstance = new Resend(apiKey);
   }
 
   async sendTemplate<T extends Template>({ to, subject, template, params }: SendTemplateParams<T>) {
@@ -21,7 +23,7 @@ class EmailService {
 
     const html = await renderEmailHtml({ template, params });
 
-    return sendgrid.send({
+    return this.resendInstance?.emails.send({
       from: this.from,
       to,
       subject,
@@ -29,7 +31,7 @@ class EmailService {
     });
   }
 
-  async sendSendgridTemplate({ to, subject, templateId, dynamicTemplateData }: SendSendgridTemplateParams) {
+  /*async sendSendgridTemplate({ to, subject, templateId, dynamicTemplateData }: SendSendgridTemplateParams) {
     if (!this.apiKey) return null;
 
     return sendgrid.send({
@@ -39,14 +41,14 @@ class EmailService {
       templateId,
       dynamicTemplateData,
     });
-  }
+  }*/
 }
 
 
 export default new EmailService({
-  apiKey: config.SENDGRID_API_KEY,
+  apiKey: config.RESEND_API_KEY,
   from: {
-    email: 'notifications@ship.com',
+    email: 'notifications@resend.dev',
     name: 'Ship',
   },
 });
