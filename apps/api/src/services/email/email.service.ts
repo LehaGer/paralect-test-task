@@ -49,6 +49,6 @@ export default new EmailService({
   apiKey: config.RESEND_API_KEY,
   from: {
     email: 'notifications@resend.dev',
-    name: 'Ship',
+    name: 'Shopy',
   },
 });
