@@ -21,22 +21,24 @@ const UnauthorizedLayout: FC<UnauthorizedLayoutProps> = ({ children }) => {
         { maxWidth: 'sm', cols: 1, spacing: 'sm' },
       ]}
     >
-      <MediaQuery
-        smallerThan="sm"
-        styles={{ display: 'none' }}
-      >
-        <Image
-          alt="app info"
-          src="../images/ship.svg"
-          height="100vh"
-        />
-      </MediaQuery>
 
       <div className={classes.wrapper}>
         <main className={classes.content}>
           {children}
         </main>
       </div>
+
+      <MediaQuery
+        smallerThan="sm"
+        styles={{ display: 'none' }}
+      >
+        <Image
+          alt="app info"
+          src="../images/intro.png"
+          height="95vh"
+          style={{ margin: 'auto 0em', overflow: 'hidden', width: '90%', borderRadius: '2vh' }}
+        />
+      </MediaQuery>
     </SimpleGrid>
   );
 };

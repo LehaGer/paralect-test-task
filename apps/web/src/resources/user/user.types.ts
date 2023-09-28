@@ -4,9 +4,6 @@ export interface User {
   updatedOn?: Date;
   lastRequest?: Date;
   deletedOn?: Date | null;
-  firstName: string;
-  lastName: string;
-  fullName: string;
   email: string;
   passwordHash: string;
   isEmailVerified: boolean;

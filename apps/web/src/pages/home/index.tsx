@@ -51,16 +51,6 @@ const selectOptions: SelectItem[] = [
 
 const columns: ColumnDef<userTypes.User>[] = [
   {
-    accessorKey: 'firstName',
-    header: 'First Name',
-    cell: (info) => info.getValue(),
-  },
-  {
-    accessorKey: 'lastName',
-    header: 'Last Name',
-    cell: (info) => info.getValue(),
-  },
-  {
     accessorKey: 'email',
     header: 'Email',
     cell: (info) => info.getValue(),

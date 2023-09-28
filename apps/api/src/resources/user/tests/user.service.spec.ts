@@ -23,9 +23,6 @@ describe('User service', () => {
   it('should create user', async () => {
     const mockUser = {
       _id: '123asdqwer',
-      firstName: 'John',
-      lastName: 'Smith',
-      fullName: 'John Smith',
       email: 'smith@example.com',
       isEmailVerified: false,
     };

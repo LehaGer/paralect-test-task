@@ -3,9 +3,6 @@ import { z } from 'zod';
 const schema = z.object({
   _id: z.string(),
 
-  firstName: z.string(),
-  lastName: z.string(),
-  fullName: z.string(),
   email: z.string(),
   passwordHash: z.string().nullable().optional(),
   signupToken: z.string().nullable().optional(),
