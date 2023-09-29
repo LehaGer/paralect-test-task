@@ -3,6 +3,7 @@ import { RoutePath } from 'routes';
 import {
   Header as LayoutHeader,
   Container,
+  Group,
 } from '@mantine/core';
 import { Link } from 'components';
 import { LogoImage } from 'public/images';
@@ -36,6 +37,20 @@ const Header: FC = () => {
         <Link type="router" href={RoutePath.Home}>
           <LogoImage />
         </Link>
+        <Group h="100%">
+          <Link type="router" href={RoutePath.YourProducts}>
+            Your Products
+          </Link>
+          <Link type="router" href={RoutePath.Marketplace}>
+            Marketplace
+          </Link>
+          <Link type="router" href={RoutePath.MyCart}>
+            My cart
+          </Link>
+          <Link type="router" href={RoutePath.History}>
+            History
+          </Link>
+        </Group>
         <UserMenu />
       </Container>
     </LayoutHeader>
