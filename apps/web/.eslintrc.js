@@ -19,6 +19,7 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    quotes: [2, 'single'],
     // solve problem with public folder
     'import/no-unresolved': [2,
       { ignore: ['public'] },
