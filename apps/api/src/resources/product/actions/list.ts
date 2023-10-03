@@ -16,8 +16,8 @@ const schema = z.object({
   filter: z.object({
     name: z.string().optional(),
     price: z.object({
-      from: z.number().min(0, 'Price can not be less then 0'),
-      to: z.number().min(0, 'Price can not be less then 0'),
+      from: z.coerce.number().min(0, 'Price can not be less then 0'),
+      to: z.coerce.number().min(0, 'Price can not be less then 0'),
     }).optional(),
     ownerEmail: z.string().email().optional(),
   }).nullable().default(null),
