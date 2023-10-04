@@ -24,9 +24,9 @@ interface IProductCard {
 }
 
 const ProductCard: FC<IProductCard> = ({
-  imageUrl = 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  name = 'Product Name',
-  price = 300,
+  imageUrl,
+  name,
+  price,
   isOwn = false,
 }) => {
   const { classes } = useStyles();
@@ -47,22 +47,25 @@ const ProductCard: FC<IProductCard> = ({
       </Card.Section>
       <Card.Section className={`${classes.section} ${classes.buttonSection}`}>
         <Flex justify="center" align="center" direction="row" wrap="nowrap">
-          <Button className={classes.button} variant="subtle" size="xs">
-            <IconShoppingCartPlus />
-          </Button>
-          <Button className={classes.button} variant="subtle" size="xs">
-            <IconShoppingBag />
-          </Button>
           {isOwn ? (
-            <Button className={classes.button} variant="subtle" size="xs">
-              <IconAdjustments />
-            </Button>
-          ) : null}
-          {isOwn ? (
-            <Button className={classes.button} variant="subtle" size="xs">
-              <IconTrash />
-            </Button>
-          ) : null}
+            <>
+              <Button className={classes.button} variant="subtle" size="xs">
+                <IconAdjustments />
+              </Button>
+              <Button className={classes.button} variant="subtle" size="xs">
+                <IconTrash />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button className={classes.button} variant="subtle" size="xs">
+                <IconShoppingCartPlus />
+              </Button>
+              <Button className={classes.button} variant="subtle" size="xs">
+                <IconShoppingBag />
+              </Button>
+            </>
+          )}
         </Flex>
       </Card.Section>
     </Card>
