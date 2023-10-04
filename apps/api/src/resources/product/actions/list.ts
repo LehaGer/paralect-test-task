@@ -16,8 +16,8 @@ const schema = z.object({
   filter: z.object({
     name: z.string().optional(),
     price: z.object({
-      from: z.coerce.number().min(0, 'Price can not be less then 0'),
-      to: z.coerce.number().min(0, 'Price can not be less then 0'),
+      from: z.coerce.number().min(0, 'Price can not be less then 0').optional(),
+      to: z.coerce.number().min(0, 'Price can not be less then 0').optional(),
     }).optional(),
     ownerEmail: z.string().email().optional(),
   }).nullable().default(null),
@@ -39,11 +39,13 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
   }
   if ( filter !== null && filter?.price ) {
 
-    const isCorrectPriceRange = filter.price.to - filter.price.from >= 0;
+    if (!!filter.price.to && !!filter.price.from) {
+      const isCorrectPriceRange = filter.price.to - filter.price.from >= 0;
 
-    ctx.assertClientError(isCorrectPriceRange, {
-      ownerEmail: 'Price "from" must be <= "to" price',
-    });
+      ctx.assertClientError(isCorrectPriceRange, {
+        ownerEmail: 'Price "from" must be <= "to" price',
+      });
+    }
 
   }
 
@@ -71,8 +73,8 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
         } : {},
         filter?.price ? {
           price: {
-            $gte: filter.price.from,
-            $lte: filter.price.to,
+            $gte: (filter?.price.from ?? 0),
+            $lte: (filter?.price.to ?? Infinity),
           },
         } : {},
         filter?.ownerEmail && owner ? {
