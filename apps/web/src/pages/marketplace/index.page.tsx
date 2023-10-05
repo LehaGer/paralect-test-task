@@ -41,39 +41,6 @@ interface ProductsListParams {
 const Marketplace: NextPage = () => {
   const [params, setParams] = useState<ProductsListParams>({});
 
-  const [filterByName, setFilterByName] = useState('');
-  const [filterByPriceFrom, setFilterByPriceFrom] = useState<number>();
-  const [filterByPriceTo, setFilterByPriceTo] = useState<number>();
-
-  const [debouncedFilterByName] = useDebouncedValue(filterByName, 500);
-  const [debouncedFilterByPriceFrom] = useDebouncedValue(filterByPriceFrom, 500);
-  const [debouncedFilterByPriceTo] = useDebouncedValue(filterByPriceTo, 500);
-
-  const handleFilterByName = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setFilterByName(event.target.value);
-  }, []);
-  const handleFilterByPriceFrom = useCallback((val: number | '') => {
-    setFilterByPriceFrom(isNumber(val) ? val : undefined);
-  }, []);
-  const handleFilterByPriceTo = useCallback((val: number | '') => {
-    setFilterByPriceTo(isNumber(val) ? val : undefined);
-  }, []);
-
-  useLayoutEffect(() => {
-    setParams((prev) => ({
-      ...prev,
-      filter: {
-        ...prev.filter,
-        name: debouncedFilterByName,
-        price: {
-          ...prev.filter?.price,
-          from: debouncedFilterByPriceFrom,
-          to: debouncedFilterByPriceTo,
-        },
-      },
-    }));
-  }, [debouncedFilterByName, debouncedFilterByPriceFrom, debouncedFilterByPriceTo]);
-
   const {
     data: productListResp,
     isLoading: isProductListLoading,
@@ -113,6 +80,44 @@ const Marketplace: NextPage = () => {
       />
     );
   }, [onPageChangeHandler, productListResp, pagination]);
+
+  const [filterByName, setFilterByName] = useState('');
+  const [filterByPriceFrom, setFilterByPriceFrom] = useState<number>();
+  const [filterByPriceTo, setFilterByPriceTo] = useState<number>();
+
+  const [debouncedFilterByName] = useDebouncedValue(filterByName, 500);
+  const [debouncedFilterByPriceFrom] = useDebouncedValue(filterByPriceFrom, 500);
+  const [debouncedFilterByPriceTo] = useDebouncedValue(filterByPriceTo, 500);
+
+  const handleFilterByName = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setFilterByName(event.target.value);
+  }, []);
+  const handleFilterByPriceFrom = useCallback((val: number | '') => {
+    setFilterByPriceFrom(isNumber(val) ? val : undefined);
+  }, []);
+  const handleFilterByPriceTo = useCallback((val: number | '') => {
+    setFilterByPriceTo(isNumber(val) ? val : undefined);
+  }, []);
+
+  useLayoutEffect(() => {
+    setParams((prev) => ({
+      ...prev,
+      filter: {
+        ...prev.filter,
+        name: debouncedFilterByName,
+        price: {
+          ...prev.filter?.price,
+          from: debouncedFilterByPriceFrom,
+          to: debouncedFilterByPriceTo,
+        },
+      },
+      page: 1,
+    }));
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 1,
+    }));
+  }, [debouncedFilterByName, debouncedFilterByPriceFrom, debouncedFilterByPriceTo]);
 
   return (
     <Stack spacing="lg">
