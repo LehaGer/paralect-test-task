@@ -1,3 +1,7 @@
+export interface StripeIdsInfo {
+  productId: string;
+  priceId: string;
+}
 export interface Product {
   _id: string;
   createdOn?: Date;
@@ -9,4 +13,5 @@ export interface Product {
   imageUrl: string;
   ownerId: string;
   ownerEmail: string;
+  stripe: StripeIdsInfo;
 }

@@ -12,6 +12,9 @@ const schema = z.object({
   oauth: z.object({
     google: z.boolean().default(false),
   }).optional(),
+  stripe: z.object({
+    customerId: z.string(),
+  }),
 
   createdOn: z.date().optional(),
   updatedOn: z.date().optional(),

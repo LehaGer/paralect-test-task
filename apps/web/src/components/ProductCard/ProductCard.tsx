@@ -5,7 +5,7 @@ import {
   Center,
   Container,
   Flex,
-  Image,
+  Image, TextInput,
 } from '@mantine/core';
 
 import {
@@ -15,19 +15,24 @@ import {
   IconTrash,
 } from '@tabler/icons-react';
 import { useStyles } from './styles';
+import config from '../../config';
 
 interface IProductCard {
+  _id: string;
   imageUrl?: string;
   name?: string;
   price?: number;
   isOwn?: boolean;
+  customerId?: string;
 }
 
 const ProductCard: FC<IProductCard> = ({
+  _id,
   imageUrl,
   name,
   price,
   isOwn = false,
+  customerId,
 }) => {
   const { classes } = useStyles();
   return (
@@ -61,9 +66,15 @@ const ProductCard: FC<IProductCard> = ({
               <Button className={classes.button} variant="subtle" size="xs">
                 <IconShoppingCartPlus />
               </Button>
-              <Button className={classes.button} variant="subtle" size="xs">
-                <IconShoppingBag />
-              </Button>
+              <form action={`${config.API_URL}/products/checkout/`} method="POST">
+                <section>
+                  <TextInput display="none" name="id" value={_id} />
+                  <TextInput display="none" name="customerId" value={customerId} />
+                  <Button className={classes.button} variant="subtle" size="xs" type="submit" role="link">
+                    <IconShoppingBag />
+                  </Button>
+                </section>
+              </form>
             </>
           )}
         </Flex>

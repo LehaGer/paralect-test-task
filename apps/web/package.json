@@ -23,6 +23,7 @@
     "@mantine/next": "6.0.1",
     "@mantine/notifications": "6.0.1",
     "@microsoft/signalr": "7.0.11",
+    "@stripe/stripe-js": "2.1.7",
     "@svgr/webpack": "6.5.1",
     "@tabler/icons-react": "2.10.0",
     "@tanstack/react-table": "8.7.9",
@@ -37,6 +38,7 @@
     "react-hook-form": "7.43.5",
     "react-query": "3.39.3",
     "socket.io-client": "4.6.1",
+    "stripe": "13.8.0",
     "zod": "3.21.4"
   },
   "devDependencies": {

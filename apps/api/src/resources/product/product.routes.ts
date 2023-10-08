@@ -1,4 +1,5 @@
 import { routeUtil } from '../../utils';
+import stripeCheckout from './actions/stripe-checkout';
 import list from './actions/list';
 import create from './actions/create';
 import update from './actions/update';
@@ -11,6 +12,7 @@ const privateRoutes = routeUtil.getRoutes([
   create,
   update,
   remove,
+  stripeCheckout,
 ]);
 
 const adminRoutes = routeUtil.getRoutes([
@@ -18,6 +20,7 @@ const adminRoutes = routeUtil.getRoutes([
   create,
   update,
   remove,
+  stripeCheckout,
 ]);
 
 export default {

@@ -14,11 +14,12 @@ import {
 } from '@mantine/core';
 import { IconSearch, IconX } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
-import { ChangeEvent, useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useLayoutEffect, useEffect, useMemo, useState } from 'react';
 import isNumber from 'lodash/isNumber';
 import { PaginationState } from '@tanstack/react-table';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { productApi } from '../../resources/product';
+import { accountApi } from '../../resources/account';
 
 interface ProductsListParams {
   page?: number;
@@ -29,6 +30,7 @@ interface ProductsListParams {
     name?: 'asc' | 'desc';
   };
   filter?: {
+    id?: string;
     name?: string;
     price?: {
       from?: number;
@@ -119,6 +121,20 @@ const Marketplace: NextPage = () => {
     }));
   }, [debouncedFilterByName, debouncedFilterByPriceFrom, debouncedFilterByPriceTo]);
 
+  useEffect(() => {
+    // Check to see if this is a redirect back from Checkout
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('success')) {
+      console.log('Order placed! You will receive an email confirmation.');
+    }
+
+    if (query.get('canceled')) {
+      console.log('Order canceled -- continue to shop around and checkout when you’re ready.');
+    }
+  }, []);
+
+  const { data: account } = accountApi.useGet();
+
   return (
     <Stack spacing="lg">
       <Center
@@ -204,9 +220,11 @@ const Marketplace: NextPage = () => {
         )}
         {productListResp?.items.map((product) => (
           <ProductCard
+            _id={product._id}
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}
+            customerId={account?._id}
             key={product._id}
           />
         ))}

@@ -41,6 +41,7 @@ interface ProductsListParams {
     name?: 'asc' | 'desc';
   };
   filter?: {
+    id?: string;
     name?: string;
     price?: {
       from: number;
@@ -140,10 +141,12 @@ const YourProducts: NextPage = () => {
             )}
         {productList?.items.map((product) => (
           <ProductCard
+            _id={product._id}
             isOwn
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}
+            customerId={account?._id}
             key={product._id}
           />
         ))}

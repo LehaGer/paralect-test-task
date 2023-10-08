@@ -5,8 +5,12 @@ const schema = z.object({
 
   name: z.string(),
   price: z.number(),
-  imageUrl: z.string().nullable().default('https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
+  imageUrl: z.string().nullable(),
   ownerId: z.string(),
+  stripe: z.object({
+    productId: z.string(),
+    priceId: z.string(),
+  }),
 
   createdOn: z.date().optional(),
   updatedOn: z.date().optional(),

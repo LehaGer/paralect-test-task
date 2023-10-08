@@ -2,9 +2,10 @@ import { z } from 'zod';
 
 import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
-import { Product, productService } from 'resources/product';
-import { userService } from 'resources/user';
+import { productService } from 'resources/product';
+import { User, userService } from 'resources/user';
 import { analyticsService } from 'services';
+import stripeService from '../../../services/stripe/stripe.service';
 
 const schema = z.object({
   name: z.string().max(36, 'Name can not contain more then 36 symbols.'),
@@ -14,30 +15,46 @@ const schema = z.object({
 });
 
 interface ValidatedData extends z.infer<typeof schema> {
-  product: Product;
+  user: User;
 }
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
   const { ownerEmail } = ctx.validatedData;
 
-  const isUserExists = await userService.exists({ email: ownerEmail });
+  const user = await userService.findOne({ email: ownerEmail });
 
-  ctx.assertClientError(isUserExists, {
+  ctx.assertClientError(!!user, {
     ownerEmail: 'User with this email is not exists',
   });
+
+  ctx.validatedData.user = user;
 
   await next();
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
   const {
-    name, price, imageUrl, ownerEmail,
+    name, price, imageUrl, user,
   } = ctx.validatedData;
 
-  const user = await userService.findOne({ email: ownerEmail });
+  const stripeProduct = await stripeService.products.create({
+    name,
+  });
+  const stripePrice = await stripeService.prices.create({
+    product: stripeProduct.id,
+    unit_amount: price * 100,
+    currency: 'usd',
+  });
 
   const product = await productService.insertOne({
-    name, price, imageUrl, ownerId: user?._id,
+    name,
+    price,
+    imageUrl,
+    ownerId: user?._id,
+    stripe: {
+      productId: stripeProduct.id,
+      priceId: stripePrice.id,
+    },
   });
 
   analyticsService.track('New product created', {

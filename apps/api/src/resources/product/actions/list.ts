@@ -14,6 +14,7 @@ const schema = z.object({
     name: z.enum(['asc', 'desc']).optional(),
   }).default({ createdOn: 'desc' }),
   filter: z.object({
+    id: z.string().optional(),
     name: z.string().optional(),
     price: z.object({
       from: z.coerce.number().min(0, 'Price can not be less then 0').optional(),
@@ -68,6 +69,9 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   const products = await productService.find(
     {
       $and: [
+        filter?.id ? {
+          _id: filter?.id,
+        } : {},
         filter?.name && nameRegExp ? {
           name: { $regex: nameRegExp },
         } : {},

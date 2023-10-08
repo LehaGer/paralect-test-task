@@ -8,6 +8,7 @@ import { AppKoaContext, Next, AppRouter, Template } from 'types';
 import { userService, User } from 'resources/user';
 
 import { emailRegex, passwordRegex } from 'resources/account/account.constants';
+import stripeService from 'services/stripe/stripe.service';
 
 const schema = z.object({
   email: z.string().regex(emailRegex, 'Email format is incorrect.'),
@@ -41,11 +42,18 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     securityUtil.generateSecureToken(),
   ]);
 
+  const stripeCustomer = await stripeService.customers.create({
+    email,
+  });
+
   const user = await userService.insertOne({
     email,
     passwordHash: hash.toString(),
     isEmailVerified: false,
     signupToken,
+    stripe: {
+      customerId: stripeCustomer.id,
+    },
   });
 
   analyticsService.track('New user created', {
