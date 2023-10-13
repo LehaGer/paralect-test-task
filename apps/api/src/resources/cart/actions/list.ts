@@ -8,23 +8,26 @@ import cartService from '../cart.service';
 const schema = z.object({
   page: z.string().transform(Number).default('1'),
   perPage: z.string().transform(Number).default('10'),
-  sort: z
-    .object({
-      createdOn: z.enum(['asc', 'desc']).optional(),
-    })
-    .default({ createdOn: 'desc' }),
-  filter: z
-    .object({
-      id: z.string().optional(),
-      customerId: z.string().optional(),
-      purchaseTime: z
-        .object({
-          from: z.date().optional(),
-          to: z.date().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
+  sort: z.object({
+    createdOn: z.enum(['asc', 'desc']).optional(),
+    purchasedAt: z.enum(['asc', 'desc']).optional(),
+  }).default({ createdOn: 'desc' }),
+  filter: z.object({
+    id: z.string().optional(),
+    customerId: z.string().optional(),
+    purchasedAt: z.object({
+      from: z.date().optional(),
+      to: z.date().optional(),
+    }).optional(),
+    isCurrent: z.coerce.boolean().optional(),
+    paymentStatus: z.enum([
+      'canceled',
+      'failed',
+      'pending',
+      'reversed',
+      'succeeded',
+    ]).optional(),
+  }).optional(),
 });
 
 type ValidatedData = z.infer<typeof schema>;
@@ -50,10 +53,10 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
     });
   }
 
-  if (filter?.purchaseTime) {
+  if (filter?.purchasedAt) {
 
-    if (!!filter.purchaseTime.from && !!filter.purchaseTime.to) {
-      const isCorrectPriceRange = filter.purchaseTime.to >= filter.purchaseTime.from;
+    if (!!filter.purchasedAt.from && !!filter.purchasedAt.to) {
+      const isCorrectPriceRange = filter.purchasedAt.to >= filter.purchasedAt.from;
 
       ctx.assertClientError(isCorrectPriceRange, {
         ownerEmail: 'Purchase time "from" must be <= "to" time',
@@ -77,10 +80,13 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
         filter?.customerId ? {
           customerId: filter?.customerId,
         } : {},
-        /* filter?.purchaseTime ? {
-          purchaseTime: {
-            $gte: (filter?.purchaseTime.from ?? ''),
-            $lte: (filter?.purchaseTime.to ?? Infinity),
+        filter?.isCurrent ? {
+          isCurrent: filter?.isCurrent,
+        } : {},
+        /* filter?.purchasedAt ? {
+          purchasedAt: {
+            $gte: (filter?.purchasedAt.from ?? ''),
+            $lte: (filter?.purchasedAt.to ?? Infinity),
           },
         } : {}, */
       ],

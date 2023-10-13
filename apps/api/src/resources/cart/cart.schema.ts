@@ -8,8 +8,16 @@ const schema = z.object({
   stripe: z.object({
     sessionId: z.string().optional(),
     paymentIntentionId: z.string().optional(),
-    isPaymentIntentSucceeded: z.boolean().optional(),
   }).optional(),
+  isCurrent: z.boolean().default(true),
+  paymentStatus: z.enum([
+    'canceled',
+    'failed',
+    'pending',
+    'reversed',
+    'succeeded',
+  ]).optional(),
+  purchasedAt: z.string().datetime().optional(),
 
   createdOn: z.date().optional(),
   updatedOn: z.date().optional(),

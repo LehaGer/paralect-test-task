@@ -30,7 +30,7 @@ const schema = z.object({
   ownerEmail: z.string().email(),
 });
 
-type CreateNeProductParams = z.infer<typeof schema>;
+type CreateNewProductParams = z.infer<typeof schema>;
 
 interface ProductsListParams {
   page?: number;
@@ -72,7 +72,7 @@ const YourProducts: NextPage = () => {
     formState: { errors },
     setValue,
     reset,
-  } = useForm<CreateNeProductParams>({
+  } = useForm<CreateNewProductParams>({
     resolver: zodResolver(schema),
     defaultValues: {
       ownerEmail: account?.email,
@@ -101,9 +101,9 @@ const YourProducts: NextPage = () => {
   const {
     mutate: createProduct,
     isLoading: isCreateNewProductLoading,
-  } = productApi.useCreateProduct<CreateNeProductParams>();
+  } = productApi.useCreateProduct<CreateNewProductParams>();
 
-  const onSubmit = (data: CreateNeProductParams) => createProduct(data, {
+  const onSubmit = (data: CreateNewProductParams) => createProduct(data, {
     onSuccess: async () => {
       await updateProductList();
       reset();

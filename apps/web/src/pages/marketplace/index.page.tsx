@@ -20,28 +20,26 @@ import { PaginationState } from '@tanstack/react-table';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { productApi } from '../../resources/product';
 import { accountApi } from '../../resources/account';
-
-interface ProductsListParams {
-  page?: number;
-  perPage?: number;
-  sort?: {
-    createdOn?: 'asc' | 'desc';
-    price?: 'asc' | 'desc';
-    name?: 'asc' | 'desc';
-  };
-  filter?: {
-    id?: string;
-    name?: string;
-    price?: {
-      from?: number;
-      to?: number;
-    };
-    ownerEmail?: string;
-  };
-}
+import { cartApi } from '../../resources/cart';
+import { ProductsListParams } from '../../types';
+import { CartsListParams, UpdateCartParams, CreateCartParams } from '../../resources/cart/cart.types';
 
 const Marketplace: NextPage = () => {
+  const { data: account } = accountApi.useGet();
+
+  const { data: cartListResp, refetch: refetchCart } = cartApi.useList<CartsListParams>({
+    filter: {
+      customerId: account?._id,
+      isCurrent: true,
+    },
+  });
+
+  const currentCart = cartListResp?.items[0];
+
   const [params, setParams] = useState<ProductsListParams>({});
+
+  const { mutate: updateCart } = cartApi.useUpdate<UpdateCartParams>();
+  const { mutate: createCart } = cartApi.useCreateCart<CreateCartParams>();
 
   const {
     data: productListResp,
@@ -125,15 +123,13 @@ const Marketplace: NextPage = () => {
     // Check to see if this is a redirect back from Checkout
     const query = new URLSearchParams(window.location.search);
     if (query.get('success')) {
-      console.log('Order placed! You will receive an email confirmation.');
+      // console.log('Order placed! You will receive an email confirmation.');
     }
 
     if (query.get('canceled')) {
-      console.log('Order canceled -- continue to shop around and checkout when you’re ready.');
+      // console.log('Order canceled -- continue to shop around and checkout when you’re ready.');
     }
   }, []);
-
-  const { data: account } = accountApi.useGet();
 
   return (
     <Stack spacing="lg">
@@ -220,12 +216,43 @@ const Marketplace: NextPage = () => {
         )}
         {productListResp?.items.map((product) => (
           <ProductCard
+            key={product._id}
             _id={product._id}
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}
             customerId={account?._id}
-            key={product._id}
+            isInCart={currentCart?.productIds.includes(product._id)}
+            addToCart={() => {
+              if (!currentCart?._id) {
+                createCart({
+                  customerId: account?._id ?? '',
+                  productIds: [product._id],
+                }, {
+                  onSuccess: async () => {
+                    await refetchCart();
+                  },
+                });
+              }
+              updateCart({
+                id: currentCart?._id ?? '',
+                productIds: currentCart?.productIds.concat(product._id),
+              }, {
+                onSuccess: async () => {
+                  await refetchCart();
+                },
+              });
+            }}
+            removeFromCart={() => {
+              updateCart({
+                id: currentCart?._id ?? '',
+                productIds: currentCart?.productIds.filter((id) => id !== product._id),
+              }, {
+                onSuccess: async () => {
+                  await refetchCart();
+                },
+              });
+            }}
           />
         ))}
         {!isProductListLoading && !productListResp?.items.length && (

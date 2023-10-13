@@ -11,6 +11,7 @@ import {
 import {
   IconAdjustments,
   IconShoppingBag,
+  IconShoppingCartOff,
   IconShoppingCartPlus,
   IconTrash,
 } from '@tabler/icons-react';
@@ -23,7 +24,12 @@ interface IProductCard {
   name?: string;
   price?: number;
   isOwn?: boolean;
+  isCartItem?: boolean;
+  isHistoryItem?: boolean;
   customerId?: string;
+  addToCart?: () => void;
+  removeFromCart?: () => void;
+  isInCart?: boolean;
 }
 
 const ProductCard: FC<IProductCard> = ({
@@ -32,7 +38,12 @@ const ProductCard: FC<IProductCard> = ({
   name,
   price,
   isOwn = false,
+  isCartItem = false,
+  isHistoryItem = false,
   customerId,
+  addToCart = () => {},
+  removeFromCart = () => {},
+  isInCart = false,
 }) => {
   const { classes } = useStyles();
   return (
@@ -52,7 +63,13 @@ const ProductCard: FC<IProductCard> = ({
       </Card.Section>
       <Card.Section className={`${classes.section} ${classes.buttonSection}`}>
         <Flex justify="center" align="center" direction="row" wrap="nowrap">
-          {isOwn ? (
+          {isHistoryItem && null}
+          {isCartItem && (
+            <Button className={classes.button} variant="subtle" size="xs" onClick={removeFromCart}>
+              <IconShoppingCartOff />
+            </Button>
+          )}
+          {isOwn && (
             <>
               <Button className={classes.button} variant="subtle" size="xs">
                 <IconAdjustments />
@@ -61,11 +78,18 @@ const ProductCard: FC<IProductCard> = ({
                 <IconTrash />
               </Button>
             </>
-          ) : (
+          )}
+          {!isHistoryItem && !isCartItem && !isOwn && (
             <>
-              <Button className={classes.button} variant="subtle" size="xs">
-                <IconShoppingCartPlus />
-              </Button>
+              {isInCart ? (
+                <Button className={classes.button} variant="subtle" size="xs" onClick={removeFromCart}>
+                  <IconShoppingCartOff />
+                </Button>
+              ) : (
+                <Button className={classes.button} variant="subtle" size="xs" onClick={addToCart}>
+                  <IconShoppingCartPlus />
+                </Button>
+              )}
               <form action={`${config.API_URL}/products/checkout/`} method="POST">
                 <section>
                   <TextInput display="none" name="id" value={_id} />

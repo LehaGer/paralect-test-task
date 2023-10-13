@@ -5,7 +5,7 @@ import { apiService } from 'services';
 
 import { Product } from './product.types';
 
-interface ProductListResponse {
+export interface ProductListResponse {
   count: number;
   items: Product[];
   totalPages: number;

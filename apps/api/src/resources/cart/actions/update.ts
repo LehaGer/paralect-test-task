@@ -11,6 +11,18 @@ const schema = z.object({
   id: z.string(),
   customerId: z.string().optional(),
   productIds: z.string().array().optional(),
+  isCurrent: z.boolean().optional(),
+  paymentStatus: z.enum([
+    'canceled',
+    'failed',
+    'pending',
+    'reversed',
+    'succeeded',
+  ]).optional(),
+  stripe: z.object({
+    sessionId: z.string().optional(),
+    paymentIntentionId: z.string().optional(),
+  }).optional(),
 });
 
 async function validator(ctx: AppKoaContext<z.infer<typeof schema>>, next: Next) {
@@ -45,12 +57,19 @@ async function validator(ctx: AppKoaContext<z.infer<typeof schema>>, next: Next)
 }
 
 async function handler(ctx: AppKoaContext<z.infer<typeof schema>>) {
-  const { id, productIds, customerId } = ctx.validatedData;
+  const { id, productIds, customerId, isCurrent, paymentStatus, stripe } = ctx.validatedData;
 
   const cart = await cartService.updateOne({ _id: id }, cartPrev => ({
     ...cartPrev,
-    customerId: customerId ?? cartPrev.customerId,
-    productIds: productIds ?? cartPrev.productIds,
+    customerId: customerId ?? cartPrev.customerId ?? undefined,
+    productIds: productIds ?? cartPrev.productIds ?? undefined,
+    isCurrent: isCurrent ?? cartPrev.isCurrent ?? undefined,
+    paymentStatus: paymentStatus ?? cartPrev.paymentStatus ?? undefined,
+    stripe: {
+      ...cartPrev.stripe,
+      sessionId: stripe?.sessionId ?? cartPrev.stripe?.sessionId ?? undefined,
+      paymentIntentionId: stripe?.paymentIntentionId ?? cartPrev.stripe?.paymentIntentionId ?? undefined,
+    },
   }));
 
   analyticsService.track('Cart successfully updated', {

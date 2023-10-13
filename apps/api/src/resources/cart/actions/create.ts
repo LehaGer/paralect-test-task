@@ -38,6 +38,13 @@ async function validator(ctx: AppKoaContext<z.infer<typeof schema>>, next: Next)
 async function handler(ctx: AppKoaContext<z.infer<typeof schema>>) {
   const { customerId, productIds } = ctx.validatedData;
 
+  const currentCarts = await cartService.find({ customerId, isCurrent: true });
+  const currentCartIds = currentCarts.results.map(cart => cart._id);
+  await cartService.updateMany({ _id: { $in: currentCartIds } }, cartPrev => ({
+    ...cartPrev,
+    isCurrent: false,
+  }));
+
   const cart = await cartService.insertOne({
     customerId,
     productIds,
