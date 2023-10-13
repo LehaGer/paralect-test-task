@@ -74,7 +74,7 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { page, perPage, filter, sort, customer } = ctx.validatedData;
+  const { perPage, customer } = ctx.validatedData;
 
   const stripeCheckoutSessions = await stripeService.checkout.sessions.list({
     customer: customer.stripe.customerId,

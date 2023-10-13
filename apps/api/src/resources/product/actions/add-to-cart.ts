@@ -4,7 +4,7 @@ import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
 import { Product, productService } from 'resources/product';
 import { User, userService } from 'resources/user';
-import { Cart, cartService } from 'resources/cart';
+import { cartService } from 'resources/cart';
 import { analyticsService } from 'services';
 
 const schema = z.object({
