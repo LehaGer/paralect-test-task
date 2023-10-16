@@ -48,7 +48,7 @@ class EmailService {
 export default new EmailService({
   apiKey: config.RESEND_API_KEY,
   from: {
-    email: 'notifications@resend.dev',
+    email: 'alexey.gerasimchuk@mail.ru',
     name: 'Shopy',
   },
 });
