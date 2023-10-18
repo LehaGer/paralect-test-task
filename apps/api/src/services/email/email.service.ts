@@ -36,7 +36,7 @@ class EmailService {
 export default new EmailService({
   apiKey: config.RESEND_API_KEY,
   from: {
-    email: 'alexey.gerasimchuk@api.ship-test-task.cluster.ws',
+    email: config.RESEND_APP_EMAIL,
     name: 'Shopy',
   },
 });

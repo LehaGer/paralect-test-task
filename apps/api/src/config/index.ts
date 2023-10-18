@@ -17,6 +17,7 @@ const schema = z.object({
   WEB_URL: z.string(),
   SENDGRID_API_KEY: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
+  RESEND_APP_EMAIL: z.string(),
   ADMIN_KEY: z.string().optional(),
   MIXPANEL_API_KEY: z.string().optional(),
   STRIPE_PUBLISHABLE_KEY: z.string(),
