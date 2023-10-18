@@ -2,31 +2,33 @@ import { NextPage } from 'next';
 import {
   Button,
   Center,
-  Flex, Loader,
+  Flex,
+  Loader,
   Modal,
   NumberInput,
   Stack,
   TextInput,
-  Image, Group, Text,
+  LoadingOverlay,
+  Space,
 } from '@mantine/core';
-import { IconPhoto, IconPlus, IconUpload, IconX } from '@tabler/icons-react';
+import { IconPlus } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import omit from 'lodash/omit';
-import { useState } from 'react';
-import { Dropzone, FileWithPath, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { useEffect, useState } from 'react';
+import { FileWithPath } from '@mantine/dropzone';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { handleError } from '../../utils';
 import { productApi } from '../../resources/product';
 import { accountApi } from '../../resources/account';
-import blobToBase64 from '../../utils/blob-to-base64.util';
+import ImagePicker from './components/ImagePicker';
 
 const schema = z.object({
-  name: z.string().min(1),
-  imageUrl: z.string(),
-  price: z.number().min(0),
+  name: z.string().min(1).max(36, 'Name can not contain more then 36 symbols.'),
+  price: z.number().min(0, 'Price can not be less then 0'),
+  imageUrl: z.string().url('provided image is not a url'),
   ownerEmail: z.string().email(),
 });
 
@@ -52,7 +54,11 @@ interface ProductsListParams {
 }
 
 const YourProducts: NextPage = () => {
-  const [opened, { open, close }] = useDisclosure(false);
+  const [isModalOpen, { open: openModal, close: closeModal }] = useDisclosure(false);
+  const [isCreateProductFormLoading, {
+    open: openProductFormLoader,
+    close: closeProductFormLoader,
+  }] = useDisclosure(false);
 
   const { data: account } = accountApi.useGet();
 
@@ -62,11 +68,12 @@ const YourProducts: NextPage = () => {
     },
   });
 
+  const [imageFile, setImageFile] = useState<FileWithPath>();
+
   const {
     register,
     handleSubmit,
     setError,
-    // watch,
     resetField,
     getValues,
     formState: { errors },
@@ -79,18 +86,9 @@ const YourProducts: NextPage = () => {
     },
   });
 
-  const [image, setImage] = useState<FileWithPath>();
-  const [imageUrl, setImageUrl] = useState<string>();
-  const [isImageDropzoneLoading, setIsImageDropzoneLoading] = useState<boolean>(false);
-
-  if (image) {
-    blobToBase64(image).then((value) => {
-      setImageUrl(value as string);
-      setValue('imageUrl', value as string);
-      setIsImageDropzoneLoading(false);
-    });
-  }
-  const preview = imageUrl && <Image src={imageUrl} onLoad={() => URL.revokeObjectURL(imageUrl)} />;
+  useEffect(() => {
+    register('imageUrl');
+  }, [register]);
 
   const {
     data: productList,
@@ -99,23 +97,67 @@ const YourProducts: NextPage = () => {
   } = productApi.useList(params);
 
   const {
+    mutate: uploadImage,
+  } = productApi.useUploadImage();
+
+  const {
     mutate: createProduct,
-    isLoading: isCreateNewProductLoading,
   } = productApi.useCreateProduct<CreateNewProductParams>();
 
-  const onSubmit = (data: CreateNewProductParams) => createProduct(data, {
-    onSuccess: async () => {
-      await updateProductList();
-      reset();
-      setImage(undefined);
-      setImageUrl(undefined);
-      close();
-    },
-    onError: (e) => handleError(e, setError),
-  });
+  const { mutate: removeCard } = productApi.useRemove();
+
+  const onSubmit = async (data: CreateNewProductParams) => {
+    openProductFormLoader();
+    if (!imageFile) {
+      setError('imageUrl', { message: 'required' });
+      closeProductFormLoader();
+      return;
+    }
+    const body = new FormData();
+    body.append('file', imageFile, imageFile.name);
+
+    const imageStoreUrl: string = await new Promise((resolve, reject) => {
+      uploadImage(body, {
+        onSuccess: (imageUrlFromServerResp) => {
+          setValue('imageUrl', imageUrlFromServerResp, { shouldValidate: true });
+          resolve(imageUrlFromServerResp);
+        },
+        onError: (e) => {
+          handleError(e, setError);
+          reject();
+        },
+      });
+    });
+
+    await new Promise((resolve, reject) => {
+      createProduct(
+        { ...data, imageUrl: imageStoreUrl },
+        {
+          onSuccess: async () => {
+            await updateProductList();
+            reset();
+            resolve(undefined);
+            closeModal();
+          },
+          onError: (e) => {
+            handleError(e, setError);
+            reject();
+          },
+        },
+      );
+    });
+
+    closeProductFormLoader();
+  };
+
+  const handleSettingImage = (file: FileWithPath | undefined) => {
+    setImageFile(file);
+    if (file !== undefined) setValue('imageUrl', URL.createObjectURL(file), { shouldValidate: true });
+    else resetField('imageUrl', { keepError: false });
+  };
 
   return (
-    <div>
+    <>
       <Center
         style={{
           margin: '1em',
@@ -148,6 +190,13 @@ const YourProducts: NextPage = () => {
             imageUrl={product.imageUrl}
             customerId={account?._id}
             key={product._id}
+            removeCard={() => {
+              removeCard(product._id, {
+                onSuccess: async () => {
+                  await updateProductList();
+                },
+              });
+            }}
           />
         ))}
         {(!productList || !productList?.items.length)
@@ -164,86 +213,32 @@ const YourProducts: NextPage = () => {
             )}
       </Flex>
       <Center style={{ marginTop: '2em' }}>
-        <Button onClick={open}>
+        <Button onClick={openModal}>
           <IconPlus />
           Add new product
         </Button>
       </Center>
+      <Space h="xl" />
       <Modal
-        opened={opened}
+        opened={isModalOpen}
         onClose={() => {
           if (Number.isNaN(getValues('price'))) resetField('price');
-          return close();
+          return closeModal();
         }}
         title="Add new card"
         centered
+        closeOnEscape={!isCreateProductFormLoading}
+        closeOnClickOutside={!isCreateProductFormLoading}
+        withCloseButton={!isCreateProductFormLoading}
       >
+        <LoadingOverlay visible={isCreateProductFormLoading} overlayBlur={2} />
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={20}>
-            <div>
-              <Dropzone
-                onDrop={(images) => {
-                  setImage(images[0]);
-                  setIsImageDropzoneLoading(true);
-                }}
-                loading={isImageDropzoneLoading}
-                multiple={false}
-                maxSize={3 * 1024 ** 2}
-                accept={IMAGE_MIME_TYPE}
-                style={{ marginBottom: '5px' }}
-              >
-                <Group>
-                  <Dropzone.Accept>
-                    <IconUpload
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        color: '#4664b2',
-                        margin: 'auto',
-                      }}
-                      stroke={1.5}
-                    />
-                  </Dropzone.Accept>
-                  <Dropzone.Reject>
-                    <IconX
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        color: '#b24646',
-                        margin: 'auto',
-                      }}
-                      stroke={1.5}
-                    />
-                  </Dropzone.Reject>
-                  <Dropzone.Idle>
-                    {preview ?? (
-                    <IconPhoto
-                      style={{
-                        width: '5rem',
-                        height: '5rem',
-                        color: '#858484',
-                        margin: 'auto',
-                      }}
-                      stroke={1.5}
-                    />
-                    )}
-                  </Dropzone.Idle>
-
-                  <div>
-                    <Text size="xl" inline align="center">
-                      Drag images here or click to select files
-                    </Text>
-                    <Text size="sm" c="dimmed" inline mt={7} align="center">
-                      Attach as many files as you like, each file should not
-                      exceed 5mb
-                    </Text>
-                  </div>
-                </Group>
-              </Dropzone>
-              <div style={{ color: 'red', fontSize: '1em' }}>
-                {errors.imageUrl?.message}
-              </div>
-            </div>
+            <ImagePicker
+              setImageFormValue={handleSettingImage}
+              formErrorMessage={errors.imageUrl?.message}
+              defaultImage={getValues('imageUrl')}
+            />
             <TextInput
               {...register('name')}
               label="Product Name"
@@ -256,8 +251,8 @@ const YourProducts: NextPage = () => {
                 'max',
                 'min',
               ])}
-              onChange={(value) => {
-                register('price', { valueAsNumber: true }).onChange({
+              onChange={async (value) => {
+                await register('price', { valueAsNumber: true }).onChange({
                   target: { value },
                 });
               }}
@@ -271,7 +266,6 @@ const YourProducts: NextPage = () => {
           </Stack>
           <Button
             type="submit"
-            loading={isCreateNewProductLoading}
             fullWidth
             mt={34}
           >
@@ -279,7 +273,7 @@ const YourProducts: NextPage = () => {
           </Button>
         </form>
       </Modal>
-    </div>
+    </>
   );
 };
 
