@@ -6,6 +6,8 @@ import remove from './actions/remove';
 import stripeCheckout from './actions/stripe-checkout';
 import stripeWebhook from './actions/stripe-webhook';
 import stripeCheckoutSuccess from './actions/stripe-checkout-success';
+import uploadImage from './actions/upload-image';
+import removeImage from './actions/remove-image';
 
 const publicRoutes = routeUtil.getRoutes([
   stripeWebhook,
@@ -18,6 +20,8 @@ const privateRoutes = routeUtil.getRoutes([
   remove,
   stripeCheckout,
   stripeCheckoutSuccess,
+  uploadImage,
+  removeImage,
 ]);
 
 const adminRoutes = routeUtil.getRoutes([
@@ -27,6 +31,8 @@ const adminRoutes = routeUtil.getRoutes([
   remove,
   stripeCheckout,
   stripeCheckoutSuccess,
+  uploadImage,
+  removeImage,
 ]);
 
 export default {

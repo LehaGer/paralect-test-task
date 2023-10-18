@@ -4,6 +4,7 @@ import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
 import { Product, productService } from 'resources/product';
 import { analyticsService } from 'services';
+import firebaseStorageService from '../../../services/firebase-storage/firebase-storage.service';
 
 const schema = z.object({
   id: z.string(),
@@ -29,6 +30,10 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   const { id } = ctx.validatedData;
 
   const product = await productService.deleteOne({ _id: id });
+  if (product?.imageUrl) {
+    const imagePath = await firebaseStorageService.getFilePath(product.imageUrl);
+    if (imagePath) await firebaseStorageService.removeObject(imagePath);
+  }
 
   analyticsService.track('Product successfully removed', {
     product,

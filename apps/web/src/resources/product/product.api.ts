@@ -53,9 +53,49 @@ export function useRemove<T>() {
       queryClient.setQueryData(
         ['your-products'],
         (oldYourProductsList: ProductListResponse | undefined): ProductListResponse => {
-          oldYourProductsList?.items.filter((product) => (product._id !== removedProductId));
-          return oldYourProductsList as ProductListResponse;
+          const productsList = oldYourProductsList ? { ...oldYourProductsList } : {
+            count: 0,
+            items: [],
+            totalPages: 0,
+          };
+          if (oldYourProductsList?.items) {
+            productsList.items = oldYourProductsList?.items.filter(
+              (product) => (product._id !== removedProductId),
+            );
+          }
+          return productsList;
         },
+      );
+    },
+  });
+}
+
+export function useUploadImage<T>() {
+  const uploadImage = (data: T) => apiService.post('/products/image', data);
+
+  return useMutation<string, unknown, T>(uploadImage, {
+    onSuccess: (data) => {
+      queryClient.setQueryData(['images'], (
+        oldImagesList: string[] | undefined,
+      ) => [...oldImagesList ?? [], data]);
+    },
+  });
+}
+
+export function useRemoveImage<T>() {
+  let removedImageUrl: T;
+  const remove = (data: T) => {
+    removedImageUrl = data;
+    return apiService.delete('/products/image', data);
+  };
+
+  return useMutation<undefined, unknown, T>(remove, {
+    onSuccess: () => {
+      queryClient.setQueryData(
+        ['images'],
+        (oldImagesList: string[] | undefined) => oldImagesList?.filter(
+          (imageUrl) => imageUrl === removedImageUrl,
+        ) ?? [],
       );
     },
   });

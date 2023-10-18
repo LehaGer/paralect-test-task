@@ -64,10 +64,41 @@ services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
-      target: development
+      target: runner
       args:
-        NODE_ENV: development
-        APP_ENV: development
+        NODE_ENV: production
+        APP_ENV: production
+        MONGO_URI: mongodb+srv://alexey-gerasimchuk:EXseVTMMo7kDZsCy@paralect-test-task.nw4gxnq.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp
+        MONGO_DB_NAME: paralect-test-task
+        REDIS_URI: redis://default:1HDE3BEMkBrZrbmoJPXTEN9AflMqcAVP@redis-10064.c250.eu-central-1-1.ec2.cloud.redislabs.com:10064
+        API_URL: https://api.ship-test-task.cluster.ws
+        WEB_URL: https://web.ship-test-task.cluster.ws
+        STRIPE_PUBLISHABLE_KEY: pk_test_51NsOwQF7lgekW04Hbap13yStIKr3P4uReINw37aPggrcaqP7DRhGlXOwZ9LdOwVn8QmBdPyOGKjB04lnz5HbwkTr00jPdLrn6e
+        STRIPE_SECRET_KEY: sk_test_51NsOwQF7lgekW04HKyx60dllaMAPrUZiMzuJbdwAJ01ryA4kvieyPOuULdLjEFVokkFbGxioKnG5G5z4sJlScO5I00MW9Nzc0m
+        STRIPE_ENDPOINT_SECRET: whsec_3e023fc3ce3195c0b7919a81d52e310418ac1490017f8610a9747c332233aa86
+        FIREBASE_API_KEY: AIzaSyCGRkGovgvVU53g5QyoxYIXIO5_whzYXds
+        FIREBASE_AUTH_DOMAIN: paralect-test-task.firebaseapp.com
+        FIREBASE_PROJECT_ID: paralect-test-task
+        FIREBASE_STORAGE_BUCKET: gs://paralect-test-task.appspot.com/
+        FIREBASE_MESSAGING_SENDER_ID: 494256166544
+        FIREBASE_APP_ID: 1:494256166544:web:8706cd9db72c50271d2a15
+        FIREBASE_MEASUREMENT_ID: G-H9FNFJY2X5
+    environment:
+      - MONGO_URI=mongodb+srv://alexey-gerasimchuk:EXseVTMMo7kDZsCy@paralect-test-task.nw4gxnq.mongodb.net/?retryWrites=true&w=majority&appName=AtlasApp
+      - MONGO_DB_NAME=paralect-test-task
+      - REDIS_URI=redis://default:1HDE3BEMkBrZrbmoJPXTEN9AflMqcAVP@redis-10064.c250.eu-central-1-1.ec2.cloud.redislabs.com:10064
+      - API_URL=http://localhost:3001
+      - WEB_URL=http://localhost:3002
+      - STRIPE_PUBLISHABLE_KEY=pk_test_51NsOwQF7lgekW04Hbap13yStIKr3P4uReINw37aPggrcaqP7DRhGlXOwZ9LdOwVn8QmBdPyOGKjB04lnz5HbwkTr00jPdLrn6e
+      - STRIPE_SECRET_KEY=sk_test_51NsOwQF7lgekW04HKyx60dllaMAPrUZiMzuJbdwAJ01ryA4kvieyPOuULdLjEFVokkFbGxioKnG5G5z4sJlScO5I00MW9Nzc0m
+      - STRIPE_ENDPOINT_SECRET=whsec_3e023fc3ce3195c0b7919a81d52e310418ac1490017f8610a9747c332233aa86
+      - FIREBASE_API_KEY=AIzaSyCGRkGovgvVU53g5QyoxYIXIO5_whzYXds
+      - FIREBASE_AUTH_DOMAIN=paralect-test-task.firebaseapp.com
+      - FIREBASE_PROJECT_ID=paralect-test-task
+      - FIREBASE_STORAGE_BUCKET=gs://paralect-test-task.appspot.com/
+      - FIREBASE_MESSAGING_SENDER_ID=494256166544
+      - FIREBASE_APP_ID=1:494256166544:web:8706cd9db72c50271d2a15
+      - FIREBASE_MEASUREMENT_ID=G-H9FNFJY2X5
     networks:
       - paralect-test-task
     volumes:
@@ -83,10 +114,10 @@ services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile.migrator
-      target: development
+      target: runner
       args:
-        NODE_ENV: development
-        APP_ENV: development
+        NODE_ENV: production
+        APP_ENV: production
     networks:
       - paralect-test-task
     volumes:
@@ -98,10 +129,10 @@ services:
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile.scheduler
-      target: development
+      target: runner
       args:
-        NODE_ENV: development
-        APP_ENV: development
+        NODE_ENV: production
+        APP_ENV: production
     networks:
       - paralect-test-task
     volumes:
@@ -113,10 +144,10 @@ services:
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
-      target: development
+      target: runner
       args:
-        NODE_ENV: development
-        APP_ENV: development
+        NODE_ENV: production
+        APP_ENV: production
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./apps/web/public:/app/apps/web/public
