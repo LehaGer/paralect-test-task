@@ -4,7 +4,6 @@ import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
 import { Product, productService } from 'resources/product';
 import stripeService from '../../../services/stripe/stripe.service';
-import * as console from 'console';
 import config from '../../../config';
 import { User, userService } from 'resources/user';
 import { cartService } from '../../cart';
@@ -67,21 +66,18 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     cancel_url: `${config.WEB_URL}/marketplace?success=true`,
   });
 
-  await cartService.updateOne({ _id: currentCart._id }, cartPrev => {
-    console.log(cartPrev); return ({
-      ...cartPrev,
-      stripe: {
-        ...cartPrev?.stripe,
-        paymentIntentionId: cartPrev?.stripe?.paymentIntentionId ?? undefined,
-        sessionId: stripeSession.id,
-      },
-      isCurrent: true,
-      paymentStatus: undefined,
-    });
-  });
+  await cartService.updateOne({ _id: currentCart._id }, cartPrev => ({
+    ...cartPrev,
+    stripe: {
+      ...cartPrev?.stripe,
+      paymentIntentionId: cartPrev?.stripe?.paymentIntentionId ?? undefined,
+      sessionId: stripeSession.id,
+    },
+    isCurrent: true,
+    paymentStatus: undefined,
+  }));
 
   ctx.response.redirect(stripeSession.url ?? '');
-  console.log({ ctx });
 }
 
 export default (router: AppRouter) => {

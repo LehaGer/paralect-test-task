@@ -101,8 +101,6 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     });
     const productsFromDb = productsFromDbResp.results;
 
-    console.log({ productsFromStripeSession, productsFromDb });
-
     const products = productsFromStripeSession
       .concat(productsFromDb)
       .filter(val => !!val?._id)
@@ -118,8 +116,6 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     };
 
   }));
-
-  console.log(cartsWithStripeSessionInfo);
 
   /* const carts = await cartService.find(
     {
