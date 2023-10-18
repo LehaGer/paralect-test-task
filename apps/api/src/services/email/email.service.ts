@@ -30,18 +30,6 @@ class EmailService {
       html,
     });
   }
-
-  /*async sendSendgridTemplate({ to, subject, templateId, dynamicTemplateData }: SendSendgridTemplateParams) {
-    if (!this.apiKey) return null;
-
-    return sendgrid.send({
-      from: this.from,
-      to,
-      subject,
-      templateId,
-      dynamicTemplateData,
-    });
-  }*/
 }
 
 
