@@ -45,7 +45,7 @@ export function useRemove<T>() {
   let removedProductId: T;
   const remove = (data: T) => {
     removedProductId = data;
-    return apiService.delete('/products', data);
+    return apiService.delete('/products', { id: data });
   };
 
   return useMutation<undefined, unknown, T>(remove, {

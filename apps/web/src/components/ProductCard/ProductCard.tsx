@@ -9,7 +9,6 @@ import {
 } from '@mantine/core';
 
 import {
-  IconAdjustments,
   IconShoppingBag,
   IconShoppingCartOff,
   IconShoppingCartPlus,
@@ -29,6 +28,7 @@ interface IProductCard {
   customerId?: string;
   addToCart?: () => void;
   removeFromCart?: () => void;
+  removeCard?: () => void;
   isInCart?: boolean;
 }
 
@@ -42,6 +42,7 @@ const ProductCard: FC<IProductCard> = ({
   isHistoryItem = false,
   customerId,
   addToCart = () => {},
+  removeCard = () => {},
   removeFromCart = () => {},
   isInCart = false,
 }) => {
@@ -70,14 +71,9 @@ const ProductCard: FC<IProductCard> = ({
             </Button>
           )}
           {isOwn && (
-            <>
-              <Button className={classes.button} variant="subtle" size="xs">
-                <IconAdjustments />
-              </Button>
-              <Button className={classes.button} variant="subtle" size="xs">
-                <IconTrash />
-              </Button>
-            </>
+            <Button className={classes.button} variant="subtle" size="xs" onClick={removeCard}>
+              <IconTrash />
+            </Button>
           )}
           {!isHistoryItem && !isCartItem && !isOwn && (
             <>
