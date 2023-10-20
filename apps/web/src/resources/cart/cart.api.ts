@@ -3,43 +3,24 @@ import { useMutation, useQuery } from 'react-query';
 import queryClient from 'query-client';
 import { apiService } from 'services';
 
-import Stripe from 'stripe';
-import { Cart } from './cart.types';
-import { Product } from '../product/product.types';
+import { Cart, HistoryListItemResponse } from './cart.types';
 
-interface CartListResponse {
+interface IHistoryListResponse {
   count: number;
-  items: Cart[];
-  totalPages: number;
-}
-interface CartHistoryListResponse {
-  count: number;
-  items: {
-    cart: Cart,
-    stripeCheckoutSessionWithItems: Stripe.Checkout.Session & {
-      line_items: Stripe.ApiList<Stripe.LineItem>
-    },
-    products: Product[],
-  }[];
+  items: HistoryListItemResponse[];
   totalPages: number;
 }
 
-export function useCreateCart<T>() {
-  const createProduct = (data: T) => apiService.post('/carts', data);
+export function useGet() {
+  const get = () => apiService.get('/carts');
 
-  return useMutation<Cart, unknown, T>(createProduct);
+  return useQuery<Cart>(['carts'], get);
 }
 
-export function useList<T>(params: T) {
-  const list = () => apiService.get('/carts', params);
-
-  return useQuery<CartListResponse>(['carts', params], list);
-}
-
-export function useHistoryList<T>(params: T) {
+export function useGetHistoryList<T>(params: T) {
   const list = () => apiService.get('/carts/history', params);
 
-  return useQuery<CartHistoryListResponse>(['carts-history', params], list);
+  return useQuery<IHistoryListResponse>(['carts-history', params], list);
 }
 
 export function useUpdate<T>() {
@@ -49,32 +30,20 @@ export function useUpdate<T>() {
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(
         ['carts'],
-        (oldYourCartsList: CartListResponse | undefined): CartListResponse => {
-          oldYourCartsList?.items.map((cart) => (cart._id === updatedCart._id
-            ? updatedCart
-            : cart));
-          return oldYourCartsList as CartListResponse;
-        },
+        () => updatedCart,
       );
     },
   });
 }
 
-export function useRemove<T>() {
-  let removedCartId: T;
-  const remove = (data: T) => {
-    removedCartId = data;
-    return apiService.delete('/carts', data);
-  };
+export function useEmpty<T>() {
+  const empty = () => apiService.patch('/carts/empty');
 
-  return useMutation<undefined, unknown, T>(remove, {
-    onSuccess: () => {
+  return useMutation<undefined, unknown, T>(empty, {
+    onSuccess: (updatedCart) => {
       queryClient.setQueryData(
         ['carts'],
-        (oldYourCartsList: CartListResponse | undefined): CartListResponse => {
-          oldYourCartsList?.items.filter((cart) => (cart._id !== removedCartId));
-          return oldYourCartsList as CartListResponse;
-        },
+        () => updatedCart,
       );
     },
   });

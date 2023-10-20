@@ -6,6 +6,7 @@ import { productService } from 'resources/product';
 import { User, userService } from 'resources/user';
 import { analyticsService } from 'services';
 import stripeService from '../../../services/stripe/stripe.service';
+import * as https from 'https';
 
 const schema = z.object({
   name: z.string().max(36, 'Name can not contain more then 36 symbols.'),
@@ -37,9 +38,37 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     name, price, imageUrl, user,
   } = ctx.validatedData;
 
+  const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+    https.get(imageUrl, async (response) => {
+      const buff: any[] = [];
+
+      response.on('data', chunk => buff.push(chunk));
+      response.on('end', () => resolve(Buffer.concat(buff)));
+      response.on('error', err => reject(`error converting stream - ${err}`));
+
+    } );
+  });
+
+  const stripeFile = await stripeService.files.create({
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+    purpose: 'product_image',
+    file: {
+      data: fileBuffer,
+      name: imageUrl,
+      type: 'image/jpeg',
+    },
+  });
+
+  const stripeFileLink = await stripeService.fileLinks.create({
+    file: stripeFile.id,
+  });
+
   const stripeProduct = await stripeService.products.create({
     name,
+    images: [stripeFileLink.url ?? ''],
   });
+
   const stripePrice = await stripeService.prices.create({
     product: stripeProduct.id,
     unit_amount: price * 100,
@@ -61,7 +90,7 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     product,
   });
 
-  ctx.body = await productService.getPublic(product);
+  ctx.body = product;
 }
 
 export default (router: AppRouter) => {

@@ -227,9 +227,6 @@ const YourProducts: NextPage = () => {
         }}
         title="Add new card"
         centered
-        closeOnEscape={!isCreateProductFormLoading}
-        closeOnClickOutside={!isCreateProductFormLoading}
-        withCloseButton={!isCreateProductFormLoading}
       >
         <LoadingOverlay visible={isCreateProductFormLoading} overlayBlur={2} />
         <form onSubmit={handleSubmit(onSubmit)}>

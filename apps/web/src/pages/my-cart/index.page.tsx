@@ -7,19 +7,12 @@ import { accountApi } from '../../resources/account';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
 import config from '../../config';
-import { CartsListParams, UpdateCartParams } from '../../resources/cart/cart.types';
+import { UpdateCartParams } from '../../resources/cart/cart.types';
 
 const MyCart: NextPage = () => {
   const { data: account } = accountApi.useGet();
 
-  const { data: cartListResp, refetch: refetchCart } = cartApi.useList<CartsListParams>({
-    filter: {
-      customerId: account?._id,
-      isCurrent: true,
-    },
-  });
-
-  const currentCart = cartListResp?.items[0];
+  const { data: cart, refetch: refetchCart } = cartApi.useGet();
 
   const {
     data: productListResp,
@@ -27,7 +20,7 @@ const MyCart: NextPage = () => {
     refetch: refetchProducts,
   } = productApi.useList<ProductsListParams>({
     filter: {
-      cartIds: [currentCart?._id ?? ''],
+      cartIds: [cart?._id ?? ''],
     },
   });
 
@@ -68,8 +61,8 @@ const MyCart: NextPage = () => {
             isCartItem
             removeFromCart={() => {
               updateCart({
-                id: currentCart?._id ?? '',
-                productIds: currentCart?.productIds.filter((id) => id !== product._id),
+                id: cart?._id ?? '',
+                productIds: cart?.productIds.filter((id) => id !== product._id),
               }, {
                 onSuccess: async () => {
                   await refetchCart();

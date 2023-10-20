@@ -18,58 +18,53 @@ export interface Cart {
 }
 
 export enum PaymentStatus {
-  canceled = 'canceled',
-  failed = 'failed',
-  pending = 'pending',
-  reversed = 'reversed',
-  succeeded = 'succeeded',
+  no_payment_required = 'no_payment_required',
+  paid = 'paid',
+  unpaid = 'unpaid',
 }
 
-export interface CartsListParams {
+export enum SessionStatus {
+  complete = 'complete',
+  expired = 'expired',
+  open = 'open',
+}
+
+export interface IHistoryListParams {
   page?: number;
   perPage?: number;
   sort?: {
-    createdOn?: 'asc' | 'desc';
+    createdAt?: 'asc' | 'desc';
   };
   filter?: {
-    id?: string;
-    customerId?: string;
-    purchasedAt?: {
+    startingAfter?: string;
+    endingBefore?: string;
+    createdAt?: {
       from?: number;
       to?: number;
     };
-    isCurrent?: boolean;
+    status?: SessionStatus;
     paymentStatus?: PaymentStatus;
   };
 }
 
-export interface CartsHistoryListParams {
-  page?: number;
-  perPage?: number;
-  sort?: {
-    createdOn?: 'asc' | 'desc';
-  };
-  filter?: {
-    id?: string;
-    customerId?: string;
-    purchasedAt?: {
-      from?: number;
-      to?: number;
-    };
-    paymentStatus?: PaymentStatus;
-  };
-}
+const historyListItemResponseSchema = z.object({
+  status: z.enum(['complete', 'expired', 'open']).nullable(),
+  paymentStatus: z.enum(['no_payment_required', 'paid', 'unpaid']),
+  totalCost: z.number().min(0).nullable(),
+  paymentIntentTime: z.date(),
+  products: z.object({
+    id: z.string(),
+    price: z.number().min(0),
+    name: z.string(),
+    imageUrl: z.string().url().nullable(),
+  }).array(),
+});
+
+export type HistoryListItemResponse = z.infer<typeof historyListItemResponseSchema>;
 
 export interface UpdateCartParams {
   id: string,
-  customerId?: string,
   productIds?: string[],
-  isCurrent?: boolean,
-  paymentStatus?: PaymentStatus,
-  stripe?: {
-    sessionId?: string;
-    paymentIntentionId?: string;
-  },
 }
 
 const CreateCartSchema = z.object({

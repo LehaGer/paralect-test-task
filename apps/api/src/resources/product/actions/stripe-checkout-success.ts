@@ -30,20 +30,12 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 async function handler(ctx: AppKoaContext<ValidatedData>) {
   const { cart } = ctx.validatedData;
 
-  await cartService.updateOne({ _id: cart._id }, cartPrev => {
-    return ({
-      ...cartPrev,
-      stripe: {
-        ...cartPrev.stripe,
-        paymentIntentionId: cartPrev.stripe?.paymentIntentionId ?? undefined,
-        sessionId: cartPrev.stripe?.sessionId,
-      },
-      isCurrent: false,
-      paymentStatus: 'pending',
-    });
-  });
+  await cartService.updateOne(
+    { _id: cart._id },
+    () => ({ productIds: [] }),
+  );
 
-  ctx.response.redirect(`${config.WEB_URL}/marketplace/`);
+  ctx.response.redirect(`${config.WEB_URL}/marketplace?success=true`);
 }
 
 export default (router: AppRouter) => {

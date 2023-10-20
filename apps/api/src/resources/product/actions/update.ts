@@ -65,7 +65,7 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     product,
   });
 
-  ctx.body = await productService.getPublic(product);
+  ctx.body = product;
 }
 
 export default (router: AppRouter) => {

@@ -1,151 +1,139 @@
 import { z } from 'zod';
 
-import { AppKoaContext, AppRouter, Next } from 'types';
+import { AppKoaContext, AppRouter } from 'types';
 import { validateMiddleware } from 'middlewares';
-import { User, userService } from 'resources/user';
-import cartService from '../cart.service';
 import stripeService from '../../../services/stripe/stripe.service';
+import Stripe from 'stripe';
 import { productService } from '../../product';
 
 const schema = z.object({
   page: z.string().transform(Number).default('1'),
   perPage: z.string().transform(Number).default('10'),
   sort: z.object({
-    createdOn: z.enum(['asc', 'desc']).optional(),
-    purchasedAt: z.enum(['asc', 'desc']).optional(),
-  }).default({ createdOn: 'desc' }),
+    createdAt: z.enum(['asc', 'desc']).optional(),
+  }).default({ createdAt: 'desc' }),
   filter: z.object({
-    // id: z.string().optional(),
-    customerId: z.string().optional(),
-    // purchasedAt: z.object({
-    //   from: z.date().optional(),
-    //   to: z.date().optional(),
-    // }).optional(),
-    // paymentStatus: z.enum([
-    //   'canceled',
-    //   'failed',
-    //   'pending',
-    //   'reversed',
-    //   'succeeded',
-    // ]).optional(),
+    startingAfter: z.string().optional(),
+    endingBefore: z.string().optional(),
+    createdAt: z.object({
+      from: z.date().optional(),
+      to: z.date().optional(),
+    }).optional(),
+    status: z.enum(['complete', 'expired', 'open']).optional(),
+    paymentStatus: z.enum(['no_payment_required', 'paid', 'unpaid']).optional(),
   }).optional(),
 });
 
-interface ValidatedData extends z.infer<typeof schema> {
-  customer: User
-}
+type ValidatedData = z.infer<typeof schema>;
 
-async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-  const { filter } = ctx.validatedData;
+const responseSchema = z.object({
+  status: z.enum(['complete', 'expired', 'open']).nullable(),
+  paymentStatus: z.enum(['no_payment_required', 'paid', 'unpaid']),
+  totalCost: z.number().min(0).nullable(),
+  paymentIntentTime: z.date(),
+  products: z.object({
+    id: z.string(),
+    price: z.number().min(0),
+    name: z.string(),
+    imageUrl: z.string().url().nullable(),
+  }).array(),
+});
 
-  /* if (filter?.id) {
-
-    const cart = await cartService.exists({ _id: filter.id });
-
-    ctx.assertClientError(cart, {
-      ownerEmail: `Cart with id ${filter?.id} is not exists`,
-    });
-
-  } */
-
-  if (filter?.customerId) {
-    const customer = await userService.findOne({ _id: filter.customerId });
-
-    ctx.assertClientError(!!customer, {
-      ownerEmail: `User with id ${filter?.customerId} is not exists`,
-    });
-
-    ctx.validatedData.customer = customer;
-  }
-
-  /* if (filter?.purchasedAt) {
-
-    if (!!filter.purchasedAt.from && !!filter.purchasedAt.to) {
-      const isCorrectPriceRange = filter.purchasedAt.to >= filter.purchasedAt.from;
-
-      ctx.assertClientError(isCorrectPriceRange, {
-        ownerEmail: 'Purchase time "from" must be <= "to" time',
-      });
-    }
-
-  } */
-
-  await next();
-}
+type ResponseType = z.infer<typeof responseSchema>;
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { perPage, customer } = ctx.validatedData;
+  const { user } = ctx.state;
+  const { perPage, page, filter, sort } = ctx.validatedData;
 
-  const stripeCheckoutSessions = await stripeService.checkout.sessions.list({
-    customer: customer.stripe.customerId,
+  const isSatisfiesCreatedAtCondition = (sessionCreationTime: number) => {
+    const sessionCreationTimeDate = new Date(sessionCreationTime);
+
+    let iSatisfiesFromCondition: boolean;
+    let iSatisfiesToCondition: boolean;
+
+    if (!filter?.createdAt?.from) {
+      iSatisfiesFromCondition = true;
+    } else {
+      const filterCreationFromDate = filter?.createdAt?.from as Date;
+      iSatisfiesFromCondition = filterCreationFromDate <= sessionCreationTimeDate;
+    }
+
+    if (!filter?.createdAt?.to) {
+      iSatisfiesToCondition = true;
+    } else {
+      const filterCreationToDate = filter?.createdAt?.to as Date;
+      iSatisfiesToCondition = filterCreationToDate <= sessionCreationTimeDate;
+    }
+
+    return iSatisfiesFromCondition && iSatisfiesToCondition;
+  };
+  const isSatisfiesStatusCondition = (sessionStatus: Stripe.Checkout.Session.Status | null) => {
+    if (!filter?.status) return true;
+    return filter?.status === sessionStatus;
+  };
+  const isSatisfiesPaymentStatusCondition = (sessionPaymentStatus: Stripe.Checkout.Session.PaymentStatus) => {
+    if (!filter?.paymentStatus) return true;
+    return filter?.paymentStatus === sessionPaymentStatus;
+  };
+
+  const stripeCheckoutSessions: Stripe.Checkout.Session[] = [];
+
+  await stripeService.checkout.sessions.list({
+    customer: user.stripe.customerId,
     expand: [ 'data.line_items' ],
-    limit: perPage,
-    // starting_after: '',
-    // ending_before: '',
+    limit: 10,
+    starting_after: filter?.startingAfter,
+    ending_before: filter?.endingBefore,
+  }).autoPagingEach(session => {
+    if (!isSatisfiesCreatedAtCondition(session.created)) return;
+    if (!isSatisfiesStatusCondition(session.status)) return;
+    if (!isSatisfiesPaymentStatusCondition(session.payment_status)) return;
+    stripeCheckoutSessions.push(session);
   });
 
-  const cartsWithStripeSessionInfo = await Promise.all(stripeCheckoutSessions.data.map(async sessionInfo => {
+  if (sort?.createdAt === 'asc') stripeCheckoutSessions.reverse();
 
-    const cart = await cartService.findOne({ 'stripe.sessionId': sessionInfo.id });
+  const stripeCheckoutSessionsPaginated = stripeCheckoutSessions.slice((page - 1) * perPage, page * perPage);
 
-    const stripeProductsIds = sessionInfo.line_items?.data
-      .map(item => item.price?.product)
-      .filter(val => !!val) as string[] ?? [];
-    const productsFromStripeSession = await Promise
-      .all(stripeProductsIds
-        .map(stripeProductId =>
-          productService.findOne({ 'stripe.productId': stripeProductId })));
+  const stripeUnicProductIds = stripeCheckoutSessionsPaginated
+    .reduce(
+      (previousProductIds, session) => {
+        const productIds = session.line_items?.data
+          .map(item => item.price?.product)
+          .filter(productId => !!productId) as string[]
+          ?? [];
+        const unicProductIds = productIds.filter(productId => !previousProductIds.includes(productId));
+        return [...previousProductIds, ...unicProductIds];
+      },
+      Array<string>(),
+    );
 
-    const productsFromDbResp = await productService.find({
-      _id: { $in: cart?.productIds ?? [] },
-    });
-    const productsFromDb = productsFromDbResp.results;
-
-    const products = productsFromStripeSession
-      .concat(productsFromDb)
-      .filter(val => !!val?._id)
-      .filter((value, index, array) => {
-        const firstItemIndex = array.findIndex(arrayItem => arrayItem?._id === value?._id);
-        return firstItemIndex === index;
-      });
-
-    return {
-      cart,
-      stripeCheckoutSessionWithItems: sessionInfo,
-      products,
-    };
-
+  const stripeUnicProducts = await Promise.all(stripeUnicProductIds.map(stripeProductId => {
+    return stripeService.products.retrieve(stripeProductId);
   }));
 
-  /* const carts = await cartService.find(
-    {
-      $and: [
-        filter?.id ? {
-          _id: filter?.id,
-        } : {},
-        filter?.customerId ? {
-          customerId: filter?.customerId,
-        } : {},
-        { isCurrent: false },
-        /!* filter?.purchasedAt ? {
-          purchasedAt: {
-            $gte: (filter?.purchasedAt.from ?? ''),
-            $lte: (filter?.purchasedAt.to ?? Infinity),
-          },
-        } : {}, *!/
-      ],
-    },
-    { page, perPage },
-    { sort },
-  ); */
+  const dbUnicProducts = (await productService.find({ 'stripe.productId': { $in: stripeUnicProductIds } })).results;
+
+  const resultingInfo: ResponseType[] = stripeCheckoutSessionsPaginated.map(session => ({
+    status: session.status,
+    paymentStatus: session.payment_status,
+    totalCost: session.amount_total ? session.amount_total / 100 : null,
+    paymentIntentTime: new Date(session.created * 1000),
+    products: session.line_items?.data.map((item) => ({
+      id: item.price?.product as string,
+      price: item.amount_total / 100,
+      name: stripeUnicProducts.find(product => product.id === item.price?.product)?.name ?? '',
+      imageUrl: dbUnicProducts.find(product => product.stripe.productId === item.price?.product)?.imageUrl ?? null,
+    })) ?? [],
+  }));
 
   ctx.body = {
-    items: cartsWithStripeSessionInfo,
-    totalPages: cartsWithStripeSessionInfo.length, // todo:
-    count: cartsWithStripeSessionInfo.length,
+    count: resultingInfo.length,
+    items: resultingInfo,
+    totalPages: Math.round(resultingInfo.length / perPage + .5),
   };
 }
 
 export default (router: AppRouter) => {
-  router.get('/history', validateMiddleware(schema), validator, handler);
+  router.get('/history', validateMiddleware(schema), handler);
 };

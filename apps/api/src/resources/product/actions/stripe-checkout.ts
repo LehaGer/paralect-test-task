@@ -6,7 +6,7 @@ import { Product, productService } from 'resources/product';
 import stripeService from '../../../services/stripe/stripe.service';
 import config from '../../../config';
 import { User, userService } from 'resources/user';
-import { cartService } from '../../cart';
+import { Cart, cartService } from '../../cart';
 
 const schema = z.object({
   id: z.string().optional(),
@@ -16,6 +16,7 @@ const schema = z.object({
 interface ValidatedData extends z.infer<typeof schema> {
   product?: Product;
   customer: User;
+  cart: Cart;
 }
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
@@ -41,19 +42,23 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 
   ctx.validatedData.customer = customer;
 
+  const cart = await cartService.findOne({ customerId });
+
+  ctx.assertClientError(!!cart, {
+    ownerEmail: 'Cart with this customer id is not exists',
+  });
+
+  ctx.validatedData.cart = cart;
+
   await next();
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { product, customer } = ctx.validatedData;
+  const { product, customer, cart } = ctx.validatedData;
 
-  const currentCart =
-    await cartService.findOne({ isCurrent: true, customerId: customer._id })
-    ?? await cartService.insertOne( { customerId: customer._id } );
-  const currentCartProductIds = currentCart?.productIds ?? [];
-  const currentCartProductsResp = await productService.find({ _id: { $in: currentCartProductIds } });
-  const currentCartProducts = currentCartProductsResp.results;
-  const products = product ? currentCartProducts.concat(product) : currentCartProducts;
+  const cartProductsResp = await productService.find({ _id: { $in: cart.productIds } });
+  const cartProducts = cartProductsResp.results;
+  const products = product ? cartProducts.concat(product) : cartProducts;
 
   const stripeSession = await stripeService.checkout.sessions.create({
     customer: customer.stripe.customerId,
@@ -62,22 +67,11 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
       quantity: 1,
     })),
     mode: 'payment',
-    success_url: `${config.API_URL}/products/checkout-success?cartId=${currentCart._id}`,
-    cancel_url: `${config.WEB_URL}/marketplace?success=true`,
+    success_url: `${config.API_URL}/products/checkout-success?cartId=${cart._id}`,
+    cancel_url: `${config.WEB_URL}/marketplace?success=false`,
   });
 
-  await cartService.updateOne({ _id: currentCart._id }, cartPrev => ({
-    ...cartPrev,
-    stripe: {
-      ...cartPrev?.stripe,
-      paymentIntentionId: cartPrev?.stripe?.paymentIntentionId ?? undefined,
-      sessionId: stripeSession.id,
-    },
-    isCurrent: true,
-    paymentStatus: undefined,
-  }));
-
-  ctx.response.redirect(stripeSession.url ?? '');
+  ctx.response.redirect(stripeSession.url ?? `${config.WEB_URL}/marketplace?success=false`);
 }
 
 export default (router: AppRouter) => {

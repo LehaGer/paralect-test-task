@@ -19,11 +19,6 @@ const updateLastRequest = (_id: string) => {
   );
 };
 
-const getPublic = async (cart: Cart | null) => {
-  return cart;
-};
-
 export default Object.assign(service, {
   updateLastRequest,
-  getPublic,
 });

@@ -1,26 +1,21 @@
 import { routeUtil } from '../../utils';
-import create from './actions/create';
-import list from './actions/list';
+import get from './actions/get';
 import update from './actions/update';
-import remove from './actions/remove';
 import getHistory from './actions/get-history';
+import empty from './actions/empty';
 
-const publicRoutes = routeUtil.getRoutes([
-]);
+const publicRoutes = routeUtil.getRoutes([]);
 
 const privateRoutes = routeUtil.getRoutes([
-  create,
-  list,
+  get,
   update,
-  remove,
   getHistory,
+  empty,
 ]);
 
 const adminRoutes = routeUtil.getRoutes([
-  create,
-  list,
+  get,
   update,
-  remove,
   getHistory,
 ]);
 

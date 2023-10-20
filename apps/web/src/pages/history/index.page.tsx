@@ -2,24 +2,18 @@ import { NextPage } from 'next';
 import { Center, Flex, Loader, Space, Stack, Container, SimpleGrid } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import React from 'react';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import { accountApi } from '../../resources/account';
-import { cartApi } from '../../resources/cart';
-import {
-  CartsHistoryListParams,
-} from '../../resources/cart/cart.types';
+import ProductCard from 'components/ProductCard/ProductCard';
+import { cartApi } from 'resources/cart';
+import { IHistoryListParams } from 'resources/cart/cart.types';
 
 const History: NextPage = () => {
-  const { data: account } = accountApi.useGet();
-
   const {
     data: historyListResp,
     isLoading: isHistoryLoading,
     // refetch: refetchCart,
-  } = cartApi.useHistoryList<CartsHistoryListParams>({
-    filter: {
-      customerId: account?._id,
-    },
+  } = cartApi.useGetHistoryList<IHistoryListParams>({
+    page: 1,
+    perPage: 10,
   });
 
   const historyList = historyListResp?.items;
@@ -54,7 +48,7 @@ const History: NextPage = () => {
             There no carts in history yet
           </Center>
         )}
-        {historyList?.map((listItem) => (
+        {historyList?.map((item) => (
           <Flex
             gap="md"
             justify="flex-start"
@@ -71,22 +65,10 @@ const History: NextPage = () => {
               }}
             >
               {Object.entries({
-                // cartId: listItem.cart?._id,
-                'purchased at': listItem.cart?.purchasedAt,
-                'stripe session created at': new Date(
-                  listItem.stripeCheckoutSessionWithItems.created * 1000,
-                )
-                  .toISOString()
-                  .substr(0, 16)
-                  .split('T')
-                  .join(' '),
-                'total cost': `${
-                  listItem.stripeCheckoutSessionWithItems.amount_total
-                    ? listItem.stripeCheckoutSessionWithItems.amount_total / 100
-                    : null
-                } USD`,
-                'payment status':
-                  listItem.stripeCheckoutSessionWithItems.payment_status,
+                'stripe session created at': new Date(item.paymentIntentTime).toISOString().substr(0, 16).replace('T', ' '),
+                'total cost': `${item.totalCost} USD`,
+                status: item.status,
+                'payment status': item.paymentStatus,
               })
                 .filter((el) => !!el[1])
                 .map((field) => (
@@ -113,58 +95,23 @@ const History: NextPage = () => {
                 },
               }}
             >
-              {listItem.products.map((product) => {
-                const stripeItemPrice = listItem
-                  .stripeCheckoutSessionWithItems
-                  .line_items
-                  .data
-                  .find(
-                    (val) => val.price?.product === product?.stripe.productId,
-                  )?.amount_total;
-                const price = stripeItemPrice ? stripeItemPrice / 100 : product?.price;
-                return (
-                  <Carousel.Slide>
-                    <ProductCard
-                      key={product?._id}
-                      _id={product?._id}
-                      price={price}
-                      name={product?.name}
-                      imageUrl={product?.imageUrl}
-                      customerId={account?._id}
-                      isHistoryItem
-                    />
-                  </Carousel.Slide>
-                );
-              })}
-              {listItem.stripeCheckoutSessionWithItems.line_items.data
-                .filter(
-                  (x) => !listItem.products
-                    .filter((y) => !!(y ?? false))
-                    .map((y) => y.stripe.productId)
-                    .includes((x.price?.product as string | undefined) ?? ''),
-                )
+              {item.products
                 .map((product) => (
                   <Carousel.Slide>
                     <ProductCard
-                      key={product?.id}
-                      _id={product?.id}
-                      price={product ? product.amount_total / 100 : undefined}
-                      name={product?.description}
-                      imageUrl=""
-                      customerId={account?._id}
+                      key={product.id}
+                      _id={product.id}
+                      price={product.price}
+                      name={product.name}
+                      imageUrl={product.imageUrl ?? ''}
                       isHistoryItem
                     />
                   </Carousel.Slide>
                 ))}
             </Carousel>
             {!isHistoryLoading
-              && !listItem.products.length
-              && !listItem.stripeCheckoutSessionWithItems.line_items.data.filter(
-                (x) => !listItem.products
-                  .filter((y) => !!(y ?? false))
-                  .map((y) => y.stripe.productId)
-                  .includes((x.price?.product as string | undefined) ?? ''),
-              ).length && (
+                && !item.products.length
+                && (
                 <Center
                   style={{
                     margin: '1em',
@@ -175,7 +122,7 @@ const History: NextPage = () => {
                 >
                   There no products in the cart
                 </Center>
-            )}
+                )}
           </Flex>
         ))}
       </Stack>

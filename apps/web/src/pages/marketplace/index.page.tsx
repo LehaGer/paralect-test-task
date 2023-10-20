@@ -5,16 +5,23 @@ import {
   Group,
   Loader,
   NumberInput,
+  Pagination,
   Skeleton,
+  Space,
   Stack,
   TextInput,
   UnstyledButton,
-  Pagination,
-  Space,
 } from '@mantine/core';
 import { IconSearch, IconX } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
-import { ChangeEvent, useCallback, useLayoutEffect, useEffect, useMemo, useState } from 'react';
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import isNumber from 'lodash/isNumber';
 import { PaginationState } from '@tanstack/react-table';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -22,47 +29,44 @@ import { productApi } from '../../resources/product';
 import { accountApi } from '../../resources/account';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
-import { CartsListParams, UpdateCartParams, CreateCartParams } from '../../resources/cart/cart.types';
+import { UpdateCartParams } from '../../resources/cart/cart.types';
 
 const Marketplace: NextPage = () => {
   const { data: account } = accountApi.useGet();
 
-  const { data: cartListResp, refetch: refetchCart } = cartApi.useList<CartsListParams>({
-    filter: {
-      customerId: account?._id,
-      isCurrent: true,
-    },
-  });
-
-  const currentCart = cartListResp?.items[0];
+  const { data: cart, refetch: refetchCart } = cartApi.useGet();
 
   const [params, setParams] = useState<ProductsListParams>({});
 
   const { mutate: updateCart } = cartApi.useUpdate<UpdateCartParams>();
-  const { mutate: createCart } = cartApi.useCreateCart<CreateCartParams>();
 
-  const {
-    data: productListResp,
-    isLoading: isProductListLoading,
-  } = productApi.useList(params);
+  const { data: productListResp, isLoading: isProductListLoading } = productApi.useList(params);
+
+  console.log({ cart, productListResp });
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
     pageSize: 10,
   });
 
-  const pagination = useMemo(() => ({
-    pageIndex,
-    pageSize,
-  }), [pageIndex, pageSize]);
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize],
+  );
 
-  const onPageChangeHandler = useCallback((currentPage: any) => {
-    setPagination({ pageIndex: currentPage, pageSize });
-    setParams((prev) => ({
-      ...prev,
-      page: currentPage,
-    }));
-  }, [pageSize]);
+  const onPageChangeHandler = useCallback(
+    (currentPage: any) => {
+      setPagination({ pageIndex: currentPage, pageSize });
+      setParams((prev) => ({
+        ...prev,
+        page: currentPage,
+      }));
+    },
+    [pageSize],
+  );
 
   const renderPagination = useCallback(() => {
     const { totalPages } = productListResp || {
@@ -86,12 +90,18 @@ const Marketplace: NextPage = () => {
   const [filterByPriceTo, setFilterByPriceTo] = useState<number>();
 
   const [debouncedFilterByName] = useDebouncedValue(filterByName, 500);
-  const [debouncedFilterByPriceFrom] = useDebouncedValue(filterByPriceFrom, 500);
+  const [debouncedFilterByPriceFrom] = useDebouncedValue(
+    filterByPriceFrom,
+    500,
+  );
   const [debouncedFilterByPriceTo] = useDebouncedValue(filterByPriceTo, 500);
 
-  const handleFilterByName = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setFilterByName(event.target.value);
-  }, []);
+  const handleFilterByName = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setFilterByName(event.target.value);
+    },
+    [],
+  );
   const handleFilterByPriceFrom = useCallback((val: number | '') => {
     setFilterByPriceFrom(isNumber(val) ? val : undefined);
   }, []);
@@ -117,7 +127,11 @@ const Marketplace: NextPage = () => {
       ...prev,
       pageIndex: 1,
     }));
-  }, [debouncedFilterByName, debouncedFilterByPriceFrom, debouncedFilterByPriceTo]);
+  }, [
+    debouncedFilterByName,
+    debouncedFilterByPriceFrom,
+    debouncedFilterByPriceTo,
+  ]);
 
   useEffect(() => {
     // Check to see if this is a redirect back from Checkout
@@ -156,14 +170,16 @@ const Marketplace: NextPage = () => {
             onChange={handleFilterByName}
             placeholder="Search by name"
             icon={<IconSearch size={16} />}
-            rightSection={filterByName ? (
-              <UnstyledButton
-                onClick={() => setFilterByName('')}
-                sx={{ display: 'flex', alignItems: 'center' }}
-              >
-                <IconX color="gray" />
-              </UnstyledButton>
-            ) : null}
+            rightSection={
+              filterByName ? (
+                <UnstyledButton
+                  onClick={() => setFilterByName('')}
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <IconX color="gray" />
+                </UnstyledButton>
+              ) : null
+            }
             sx={{ width: '350px' }}
           />
         </Skeleton>
@@ -222,36 +238,34 @@ const Marketplace: NextPage = () => {
             name={product.name}
             imageUrl={product.imageUrl}
             customerId={account?._id}
-            isInCart={currentCart?.productIds.includes(product._id)}
+            isInCart={cart?.productIds.includes(product._id)}
             addToCart={() => {
-              if (!currentCart?._id) {
-                createCart({
-                  customerId: account?._id ?? '',
-                  productIds: [product._id],
-                }, {
+              updateCart(
+                {
+                  id: cart?._id ?? '',
+                  productIds: cart?.productIds.concat(product._id),
+                },
+                {
                   onSuccess: async () => {
                     await refetchCart();
                   },
-                });
-              }
-              updateCart({
-                id: currentCart?._id ?? '',
-                productIds: currentCart?.productIds.concat(product._id),
-              }, {
-                onSuccess: async () => {
-                  await refetchCart();
                 },
-              });
+              );
             }}
             removeFromCart={() => {
-              updateCart({
-                id: currentCart?._id ?? '',
-                productIds: currentCart?.productIds.filter((id) => id !== product._id),
-              }, {
-                onSuccess: async () => {
-                  await refetchCart();
+              updateCart(
+                {
+                  id: cart?._id ?? '',
+                  productIds: cart?.productIds.filter(
+                    (id) => id !== product._id,
+                  ),
                 },
-              });
+                {
+                  onSuccess: async () => {
+                    await refetchCart();
+                  },
+                },
+              );
             }}
           />
         ))}
@@ -268,12 +282,9 @@ const Marketplace: NextPage = () => {
           </Center>
         )}
       </Flex>
-      <Center>
-        {renderPagination()}
-      </Center>
+      <Center>{renderPagination()}</Center>
       <Space h="xl" />
     </Stack>
-
   );
 };
 

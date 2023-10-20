@@ -118,7 +118,7 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   );
 
   ctx.body = {
-    items: await Promise.all(products.results.map(result => productService.getPublic(result))),
+    items: products.results,
     totalPages: products.pagesCount,
     count: products.count,
   };

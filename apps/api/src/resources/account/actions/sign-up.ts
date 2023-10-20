@@ -9,6 +9,7 @@ import { userService, User } from 'resources/user';
 
 import { emailRegex, passwordRegex } from 'resources/account/account.constants';
 import stripeService from 'services/stripe/stripe.service';
+import { cartService } from '../../cart';
 
 const schema = z.object({
   email: z.string().regex(emailRegex, 'Email format is incorrect.'),
@@ -58,6 +59,14 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
 
   analyticsService.track('New user created', {
     email,
+  });
+
+  const cart = await cartService.insertOne({
+    customerId: user._id,
+  });
+
+  analyticsService.track('New cart created', {
+    cart,
   });
 
   await emailService.sendTemplate<Template.VERIFY_EMAIL>({

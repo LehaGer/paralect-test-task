@@ -1,49 +1,33 @@
-import { z } from 'zod';
-
 import { AppKoaContext, AppRouter, Next } from 'types';
-import { validateMiddleware } from 'middlewares';
 import stripeService from 'services/stripe/stripe.service';
 import * as console from 'console';
 import config from 'config';
 import Stripe from 'stripe';
-import { cartService } from '../../cart';
-
-const schema = z.object({});
+import { analyticsService } from '../../../services';
 
 interface ValidatedData {
   event: Stripe.Event;
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Event) {
-  await cartService.updateOne({ 'stripe.sessionId': session.id }, cartPrev => ({
-    ...cartPrev,
-    stripe: {
-      ...cartPrev?.stripe,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      paymentIntentionId: session.payment_intent,
-    },
-    isCurrent: false,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    purchasedAt: session.payment_status === 'paid' ? (new Date()).toISOString() : undefined,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    paymentStatus: session.payment_status === 'paid' ? 'succeeded' : 'failed',
-  }));
+  analyticsService.track('checkout.session.completed event came', {
+    session,
+  });
 }
 async function handleCheckoutSessionAsyncPaymentSucceeded(session: Stripe.Event) {
-  await cartService.updateOne({ 'stripe.sessionId': session.id }, cartPrev => ({
-    ...cartPrev,
-    purchasedAt: (new Date()).toISOString(),
-    paymentStatus: 'succeeded',
-  }));
+  analyticsService.track('checkout.session.async_payment_succeeded event came', {
+    session,
+  });
 }
 async function handleCheckoutSessionAsyncPaymentFailed(session: Stripe.Event) {
-  await cartService.updateOne({ 'stripe.sessionId': session.id }, cartPrev => ({
-    ...cartPrev,
-    paymentStatus: 'failed',
-  }));
+  analyticsService.track('checkout.session.async_payment_failed event came', {
+    session,
+  });
+}
+async function handleCheckoutSessionExpired(session: Stripe.Event) {
+  analyticsService.track('checkout.session.expired event came', {
+    session,
+  });
 }
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
@@ -77,6 +61,9 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     case 'checkout.session.async_payment_failed':
       await handleCheckoutSessionAsyncPaymentFailed(event.data.object as Stripe.Event);
       break;
+    case 'checkout.session.expired':
+      await handleCheckoutSessionExpired(event.data.object as Stripe.Event);
+      break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
@@ -85,5 +72,5 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
 }
 
 export default (router: AppRouter) => {
-  router.post('/webhook', validateMiddleware(schema), validator, handler);
+  router.post('/webhook', validator, handler);
 };

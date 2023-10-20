@@ -4,7 +4,7 @@ import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
 import { Product, productService } from 'resources/product';
 import { User, userService } from 'resources/user';
-import { cartService } from 'resources/cart';
+import { Cart, cartService } from 'resources/cart';
 import { analyticsService } from 'services';
 
 const schema = z.object({
@@ -14,6 +14,7 @@ const schema = z.object({
 
 interface ValidatedData extends z.infer<typeof schema> {
   customer: User;
+  cart: Cart;
   product: Product;
 }
 
@@ -26,7 +27,17 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
     ownerEmail: 'User with this id is not exists',
   });
 
-  ctx.validatedData.customer = customer;
+  const cart = await cartService.findOne({ customerId });
+
+  ctx.assertClientError(!!cart, {
+    ownerEmail: 'Cart with this customer id is not exists',
+  });
+
+  ctx.assertClientError(!cart.productIds.includes(productId), {
+    ownerEmail: 'Cart already contains the product',
+  });
+
+  ctx.validatedData.cart = cart;
 
   const product = await productService.findOne({ _id: productId });
 
@@ -42,22 +53,18 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 async function handler(ctx: AppKoaContext<ValidatedData>) {
   const { customer, product } = ctx.validatedData;
 
-  await cartService.updateOne({
-    $and: [{ customerId: customer._id }, { isCurrent: true }],
-  }, (cartPrev) => ({
-    ...cartPrev,
-    customerId: customer._id,
-    productIds: [
-      ...cartPrev.productIds,
-      product._id,
-    ],
-  }));
+  await cartService.updateOne(
+    { customerId: customer._id },
+    ({ productIds: prevProductIds }) => ({
+      productIds: [...prevProductIds, product._id],
+    }),
+  );
 
   analyticsService.track('New product added to cart', {
     product,
   });
 
-  ctx.body = await productService.getPublic(product); //todo
+  ctx.body = product;
 }
 
 export default (router: AppRouter) => {
