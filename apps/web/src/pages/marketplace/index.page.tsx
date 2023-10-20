@@ -42,8 +42,6 @@ const Marketplace: NextPage = () => {
 
   const { data: productListResp, isLoading: isProductListLoading } = productApi.useList(params);
 
-  console.log({ cart, productListResp });
-
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
     pageSize: 10,
