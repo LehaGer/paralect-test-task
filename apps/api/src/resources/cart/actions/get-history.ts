@@ -4,7 +4,6 @@ import { AppKoaContext, AppRouter } from 'types';
 import { validateMiddleware } from 'middlewares';
 import stripeService from '../../../services/stripe/stripe.service';
 import Stripe from 'stripe';
-import { productService } from '../../product';
 
 const schema = z.object({
   page: z.string().transform(Number).default('1'),
@@ -27,6 +26,7 @@ const schema = z.object({
 type ValidatedData = z.infer<typeof schema>;
 
 const responseSchema = z.object({
+  id: z.string(),
   status: z.enum(['complete', 'expired', 'open']).nullable(),
   paymentStatus: z.enum(['no_payment_required', 'paid', 'unpaid']),
   totalCost: z.number().min(0).nullable(),
@@ -95,36 +95,38 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
 
   const stripeCheckoutSessionsPaginated = stripeCheckoutSessions.slice((page - 1) * perPage, page * perPage);
 
-  const stripeUnicProductIds = stripeCheckoutSessionsPaginated
+  const stripeUniqProductIds = stripeCheckoutSessionsPaginated
     .reduce(
       (previousProductIds, session) => {
         const productIds = session.line_items?.data
           .map(item => item.price?.product)
           .filter(productId => !!productId) as string[]
           ?? [];
-        const unicProductIds = productIds.filter(productId => !previousProductIds.includes(productId));
-        return [...previousProductIds, ...unicProductIds];
+        const uniqProductIds = productIds.filter(productId => !previousProductIds.includes(productId));
+        return [...previousProductIds, ...uniqProductIds];
       },
       Array<string>(),
     );
 
-  const stripeUnicProducts = await Promise.all(stripeUnicProductIds.map(stripeProductId => {
+  const stripeUniqProducts = await Promise.all(stripeUniqProductIds.map(stripeProductId => {
     return stripeService.products.retrieve(stripeProductId);
   }));
 
-  const dbUnicProducts = (await productService.find({ 'stripe.productId': { $in: stripeUnicProductIds } })).results;
-
   const resultingInfo: ResponseType[] = stripeCheckoutSessionsPaginated.map(session => ({
+    id: session.id,
     status: session.status,
     paymentStatus: session.payment_status,
     totalCost: session.amount_total ? session.amount_total / 100 : null,
     paymentIntentTime: new Date(session.created * 1000),
-    products: session.line_items?.data.map((item) => ({
-      id: item.price?.product as string,
-      price: item.amount_total / 100,
-      name: stripeUnicProducts.find(product => product.id === item.price?.product)?.name ?? '',
-      imageUrl: dbUnicProducts.find(product => product.stripe.productId === item.price?.product)?.imageUrl ?? null,
-    })) ?? [],
+    products: session.line_items?.data.map((item) => {
+      const stripeProduct = stripeUniqProducts.find(product => product.id === item.price?.product);
+      return {
+        id: item.price?.product as string,
+        price: item.amount_total / 100,
+        name: stripeProduct?.name ?? '',
+        imageUrl: stripeProduct?.images[0] ?? null,
+      };
+    }) ?? [],
   }));
 
   ctx.body = {

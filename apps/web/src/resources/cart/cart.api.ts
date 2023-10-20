@@ -36,6 +36,32 @@ export function useUpdate<T>() {
   });
 }
 
+export function useAddProduct<T>() {
+  const update = (data: T) => apiService.patch('/add-product', data);
+
+  return useMutation<Cart, unknown, T>(update, {
+    onSuccess: (updatedCart) => {
+      queryClient.setQueryData(
+        ['carts'],
+        () => updatedCart,
+      );
+    },
+  });
+}
+
+export function useRemoveProduct<T>() {
+  const update = (data: T) => apiService.patch('/remove-product', data);
+
+  return useMutation<Cart, unknown, T>(update, {
+    onSuccess: (updatedCart) => {
+      queryClient.setQueryData(
+        ['carts'],
+        () => updatedCart,
+      );
+    },
+  });
+}
+
 export function useEmpty<T>() {
   const empty = () => apiService.patch('/carts/empty');
 

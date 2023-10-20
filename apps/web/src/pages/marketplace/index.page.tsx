@@ -29,7 +29,7 @@ import { productApi } from '../../resources/product';
 import { accountApi } from '../../resources/account';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
-import { UpdateCartParams } from '../../resources/cart/cart.types';
+import { AddProductParams, RemoveProductParams } from '../../resources/cart/cart.types';
 
 const Marketplace: NextPage = () => {
   const { data: account } = accountApi.useGet();
@@ -38,7 +38,8 @@ const Marketplace: NextPage = () => {
 
   const [params, setParams] = useState<ProductsListParams>({});
 
-  const { mutate: updateCart } = cartApi.useUpdate<UpdateCartParams>();
+  const { mutate: addToCart } = cartApi.useAddProduct<AddProductParams>();
+  const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
 
   const { data: productListResp, isLoading: isProductListLoading } = productApi.useList(params);
 
@@ -238,10 +239,10 @@ const Marketplace: NextPage = () => {
             customerId={account?._id}
             isInCart={cart?.productIds.includes(product._id)}
             addToCart={() => {
-              updateCart(
+              addToCart(
                 {
-                  id: cart?._id ?? '',
-                  productIds: cart?.productIds.concat(product._id),
+                  productId: product._id,
+                  customerId: account?._id ?? '',
                 },
                 {
                   onSuccess: async () => {
@@ -251,13 +252,8 @@ const Marketplace: NextPage = () => {
               );
             }}
             removeFromCart={() => {
-              updateCart(
-                {
-                  id: cart?._id ?? '',
-                  productIds: cart?.productIds.filter(
-                    (id) => id !== product._id,
-                  ),
-                },
+              removeFromCart(
+                { productId: product._id },
                 {
                   onSuccess: async () => {
                     await refetchCart();

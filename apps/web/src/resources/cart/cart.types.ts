@@ -48,6 +48,7 @@ export interface IHistoryListParams {
 }
 
 const historyListItemResponseSchema = z.object({
+  id: z.string(),
   status: z.enum(['complete', 'expired', 'open']).nullable(),
   paymentStatus: z.enum(['no_payment_required', 'paid', 'unpaid']),
   totalCost: z.number().min(0).nullable(),
@@ -65,6 +66,15 @@ export type HistoryListItemResponse = z.infer<typeof historyListItemResponseSche
 export interface UpdateCartParams {
   id: string,
   productIds?: string[],
+}
+
+export interface AddProductParams {
+  productId: string;
+  customerId: string;
+}
+
+export interface RemoveProductParams {
+  productId: string;
 }
 
 const CreateCartSchema = z.object({

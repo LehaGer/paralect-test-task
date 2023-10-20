@@ -7,7 +7,7 @@ import { accountApi } from '../../resources/account';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
 import config from '../../config';
-import { UpdateCartParams } from '../../resources/cart/cart.types';
+import { RemoveProductParams } from '../../resources/cart/cart.types';
 
 const MyCart: NextPage = () => {
   const { data: account } = accountApi.useGet();
@@ -24,7 +24,7 @@ const MyCart: NextPage = () => {
     },
   });
 
-  const { mutate: updateCart } = cartApi.useUpdate<UpdateCartParams>();
+  const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
 
   return (
     <Stack spacing="lg">
@@ -60,15 +60,15 @@ const MyCart: NextPage = () => {
             customerId={account?._id}
             isCartItem
             removeFromCart={() => {
-              updateCart({
-                id: cart?._id ?? '',
-                productIds: cart?.productIds.filter((id) => id !== product._id),
-              }, {
-                onSuccess: async () => {
-                  await refetchCart();
-                  await refetchProducts();
+              removeFromCart(
+                { productId: product._id },
+                {
+                  onSuccess: async () => {
+                    await refetchCart();
+                    await refetchProducts();
+                  },
                 },
-              });
+              );
             }}
           />
         ))}

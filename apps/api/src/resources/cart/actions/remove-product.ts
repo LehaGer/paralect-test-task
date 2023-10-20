@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import { AppKoaContext, AppRouter, Next } from 'types';
-import { validateMiddleware } from 'middlewares';
-import { productService } from 'resources/product';
-import { cartService } from 'resources/cart';
-import { analyticsService } from 'services';
+import { AppKoaContext, AppRouter, Next } from '../../../types';
+import { validateMiddleware } from '../../../middlewares';
+import { productService } from '../../product';
+import { cartService } from '../index';
+import { analyticsService } from '../../../services';
 
 const schema = z.object({
   productId: z.string(),
@@ -35,7 +35,7 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   const { user } = ctx.state;
   const { productId } = ctx.validatedData;
 
-  const product = await cartService.updateOne(
+  const cart = await cartService.updateOne(
     { customerId: user._id },
     ({ productIds: prevProductIds }) => ({
       productIds: prevProductIds.filter(prevProductId => prevProductId !== productId),
@@ -43,12 +43,12 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   );
 
   analyticsService.track('Product removed from cart', {
-    product,
+    cart,
   });
 
-  ctx.body = product;
+  ctx.body = cart;
 }
 
 export default (router: AppRouter) => {
-  router.post('/remove-from-cart', validateMiddleware(schema), validator, handler);
+  router.patch('/remove-product', validateMiddleware(schema), validator, handler);
 };

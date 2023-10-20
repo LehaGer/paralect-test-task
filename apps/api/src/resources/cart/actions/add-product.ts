@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { AppKoaContext, AppRouter, Next } from 'types';
-import { validateMiddleware } from 'middlewares';
-import { Product, productService } from 'resources/product';
-import { User, userService } from 'resources/user';
-import { Cart, cartService } from 'resources/cart';
-import { analyticsService } from 'services';
+import { AppKoaContext, AppRouter, Next } from '../../../types';
+import { validateMiddleware } from '../../../middlewares';
+import { Product, productService } from '../../product';
+import { User, userService } from '../../user';
+import { Cart, cartService } from '../index';
+import { analyticsService } from '../../../services';
 
 const schema = z.object({
   productId: z.string(),
@@ -53,7 +53,7 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 async function handler(ctx: AppKoaContext<ValidatedData>) {
   const { customer, product } = ctx.validatedData;
 
-  await cartService.updateOne(
+  const cart = await cartService.updateOne(
     { customerId: customer._id },
     ({ productIds: prevProductIds }) => ({
       productIds: [...prevProductIds, product._id],
@@ -61,12 +61,12 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   );
 
   analyticsService.track('New product added to cart', {
-    product,
+    cart,
   });
 
-  ctx.body = product;
+  ctx.body = cart;
 }
 
 export default (router: AppRouter) => {
-  router.post('/add-to-cart', validateMiddleware(schema), validator, handler);
+  router.patch('/add-product', validateMiddleware(schema), validator, handler);
 };
