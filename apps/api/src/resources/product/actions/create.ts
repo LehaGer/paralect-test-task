@@ -40,9 +40,9 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
 
   const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
     https.get(imageUrl, async (response) => {
-      const buff: any[] = [];
+      const buff: Uint8Array[] = [];
 
-      response.on('data', chunk => buff.push(chunk));
+      response.on('data', (chunk: Uint8Array) => buff.push(chunk));
       response.on('end', () => resolve(Buffer.concat(buff)));
       response.on('error', err => reject(`error converting stream - ${err}`));
 
