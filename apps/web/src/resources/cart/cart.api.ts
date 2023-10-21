@@ -12,24 +12,18 @@ interface IHistoryListResponse {
 }
 
 export function useGet() {
-  const get = () => apiService.get('/carts');
+  const get = () => apiService.get('/cart');
 
-  return useQuery<Cart>(['carts'], get);
-}
-
-export function useGetHistoryList<T>(params: T) {
-  const list = () => apiService.get('/carts/history', params);
-
-  return useQuery<IHistoryListResponse>(['carts-history', params], list);
+  return useQuery<Cart>(['cart'], get);
 }
 
 export function useAddProduct<T>() {
-  const update = (data: T) => apiService.patch('/carts/add-product', data);
+  const update = (data: T) => apiService.patch('/cart/add-product', data);
 
   return useMutation<Cart, unknown, T>(update, {
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(
-        ['carts'],
+        ['cart'],
         () => updatedCart,
       );
     },
@@ -37,12 +31,12 @@ export function useAddProduct<T>() {
 }
 
 export function useRemoveProduct<T>() {
-  const update = (data: T) => apiService.patch('/carts/remove-product', data);
+  const update = (data: T) => apiService.patch('/cart/remove-product', data);
 
   return useMutation<Cart, unknown, T>(update, {
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(
-        ['carts'],
+        ['cart'],
         () => updatedCart,
       );
     },
@@ -50,14 +44,20 @@ export function useRemoveProduct<T>() {
 }
 
 export function useEmpty<T>() {
-  const empty = () => apiService.patch('/carts/empty');
+  const empty = () => apiService.patch('/cart/empty');
 
   return useMutation<undefined, unknown, T>(empty, {
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(
-        ['carts'],
+        ['cart'],
         () => updatedCart,
       );
     },
   });
+}
+
+export function useGetHistoryList<T>(params: T) {
+  const list = () => apiService.get('/cart/history', params);
+
+  return useQuery<IHistoryListResponse>(['history', params], list);
 }

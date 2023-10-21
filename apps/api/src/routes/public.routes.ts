@@ -12,5 +12,5 @@ export default (app: AppKoa) => {
   app.use(healthCheckRouter.routes());
   app.use(mount('/account', accountRoutes.publicRoutes));
   app.use(mount('/products', productRoutes.publicRoutes));
-  app.use(mount('/carts', cartRoutes.publicRoutes));
+  app.use(mount('/cart', cartRoutes.publicRoutes));
 };

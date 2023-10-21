@@ -13,5 +13,5 @@ export default (app: AppKoa) => {
   app.use(mount('/account', compose([auth, accountRoutes.privateRoutes])));
   app.use(mount('/users', compose([auth, userRoutes.privateRoutes])));
   app.use(mount('/products', compose([auth, productRoutes.privateRoutes])));
-  app.use(mount('/carts', compose([auth, cartRoutes.privateRoutes])));
+  app.use(mount('/cart', compose([auth, cartRoutes.privateRoutes])));
 };

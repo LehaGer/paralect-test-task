@@ -31,7 +31,7 @@ import { ProductsListParams } from '../../types';
 import { AddProductParams, RemoveProductParams } from '../../resources/cart/cart.types';
 
 const Marketplace: NextPage = () => {
-  const { data: cart, refetch: refetchCart } = cartApi.useGet();
+  const { data: cart } = cartApi.useGet();
 
   const [params, setParams] = useState<ProductsListParams>({});
 
@@ -238,24 +238,10 @@ const Marketplace: NextPage = () => {
             imageUrl={product.imageUrl}
             isInCart={cart?.productIds.includes(product._id)}
             addToCart={() => {
-              addToCart(
-                { productId: product._id },
-                {
-                  onSuccess: async () => {
-                    await refetchCart();
-                  },
-                },
-              );
+              addToCart({ productId: product._id });
             }}
             removeFromCart={() => {
-              removeFromCart(
-                { productId: product._id },
-                {
-                  onSuccess: async () => {
-                    await refetchCart();
-                  },
-                },
-              );
+              removeFromCart({ productId: product._id });
             }}
           />
         ))}

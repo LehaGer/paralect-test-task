@@ -12,7 +12,6 @@ const MyCart: NextPage = () => {
   const {
     data: productListResp,
     isLoading: isProductListLoading,
-    refetch: refetchProducts,
   } = productApi.useList<ProductsListParams>({ filter: { isInCard: true } });
 
   const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
@@ -50,14 +49,7 @@ const MyCart: NextPage = () => {
             imageUrl={product.imageUrl}
             isCartItem
             removeFromCart={() => {
-              removeFromCart(
-                { productId: product._id },
-                {
-                  onSuccess: async () => {
-                    await refetchProducts();
-                  },
-                },
-              );
+              removeFromCart({ productId: product._id });
             }}
           />
         ))}

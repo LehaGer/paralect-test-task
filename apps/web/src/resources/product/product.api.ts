@@ -14,58 +14,35 @@ export interface ProductListResponse {
 export function useCreateProduct<T>() {
   const createProduct = (data: T) => apiService.post('/products', data);
 
-  return useMutation<Product, unknown, T>(createProduct);
+  return useMutation<Product, unknown, T>(createProduct, {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
 }
 
 export function useList<T>(params: T) {
   const list = () => apiService.get('/products', params);
 
-  return useQuery<ProductListResponse>(['your-products', params], list);
+  return useQuery<ProductListResponse>(['products', params], list);
 }
 
 export function useUpdate<T>() {
   const update = (data: T) => apiService.patch('/products', data);
 
   return useMutation<Product, unknown, T>(update, {
-    onSuccess: (updatedProduct) => {
-      queryClient.setQueryData(
-        ['your-products'],
-        (oldYourProductsList: ProductListResponse | undefined): ProductListResponse => {
-          oldYourProductsList?.items.map((product) => (product._id === updatedProduct._id
-            ? updatedProduct
-            : product));
-          return oldYourProductsList as ProductListResponse;
-        },
-      );
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
 
 export function useRemove<T>() {
-  let removedProductId: T;
-  const remove = (data: T) => {
-    removedProductId = data;
-    return apiService.delete('/products', { id: data });
-  };
+  const remove = (data: T) => apiService.delete('/products', { id: data });
 
   return useMutation<undefined, unknown, T>(remove, {
-    onSuccess: () => {
-      queryClient.setQueryData(
-        ['your-products'],
-        (oldYourProductsList: ProductListResponse | undefined): ProductListResponse => {
-          const productsList = oldYourProductsList ? { ...oldYourProductsList } : {
-            count: 0,
-            items: [],
-            totalPages: 0,
-          };
-          if (oldYourProductsList?.items) {
-            productsList.items = oldYourProductsList?.items.filter(
-              (product) => (product._id !== removedProductId),
-            );
-          }
-          return productsList;
-        },
-      );
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
@@ -73,30 +50,11 @@ export function useRemove<T>() {
 export function useUploadImage<T>() {
   const uploadImage = (data: T) => apiService.post('/products/image', data);
 
-  return useMutation<string, unknown, T>(uploadImage, {
-    onSuccess: (data) => {
-      queryClient.setQueryData(['images'], (
-        oldImagesList: string[] | undefined,
-      ) => [...oldImagesList ?? [], data]);
-    },
-  });
+  return useMutation<string, unknown, T>(uploadImage);
 }
 
 export function useRemoveImage<T>() {
-  let removedImageUrl: T;
-  const remove = (data: T) => {
-    removedImageUrl = data;
-    return apiService.delete('/products/image', data);
-  };
+  const remove = (data: T) => apiService.delete('/products/image', data);
 
-  return useMutation<undefined, unknown, T>(remove, {
-    onSuccess: () => {
-      queryClient.setQueryData(
-        ['images'],
-        (oldImagesList: string[] | undefined) => oldImagesList?.filter(
-          (imageUrl) => imageUrl === removedImageUrl,
-        ) ?? [],
-      );
-    },
-  });
+  return useMutation<undefined, unknown, T>(remove);
 }

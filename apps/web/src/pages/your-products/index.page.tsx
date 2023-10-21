@@ -83,7 +83,6 @@ const YourProducts: NextPage = () => {
   const {
     data: productList,
     isLoading: isProductListLoading,
-    refetch: updateProductList,
   } = productApi.useList<ProductsListParams>({ filter: { ownerId: account?._id } });
 
   const {
@@ -124,7 +123,6 @@ const YourProducts: NextPage = () => {
         { ...data, imageUrl: imageStoreUrl },
         {
           onSuccess: async () => {
-            await updateProductList();
             reset();
             resolve(undefined);
             closeModal();
@@ -179,13 +177,7 @@ const YourProducts: NextPage = () => {
             name={product.name}
             imageUrl={product.imageUrl}
             key={product._id}
-            removeCard={() => {
-              removeCard(product._id, {
-                onSuccess: async () => {
-                  await updateProductList();
-                },
-              });
-            }}
+            removeCard={() => { removeCard(product._id); }}
           />
         ))}
         {(!productList || !productList?.items.length)
