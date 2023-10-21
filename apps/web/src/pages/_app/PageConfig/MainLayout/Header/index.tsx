@@ -12,11 +12,27 @@ import { accountApi } from 'resources/account';
 
 import UserMenu from './components/UserMenu';
 import ShadowLoginBanner from './components/ShadowLoginBanner';
+import MyCartBanner from './components/MyCartBanner';
+
+const links = [
+  { link: RoutePath.YourProducts, label: 'Your Products' },
+  { link: RoutePath.Marketplace, label: 'Marketplace' },
+];
 
 const Header: FC = () => {
   const { data: account } = accountApi.useGet();
 
   if (!account) return null;
+
+  const items = links.map((link) => (
+    <Link
+      key={link.label}
+      href={link.link}
+      type="router"
+    >
+      {link.label}
+    </Link>
+  ));
 
   return (
     <LayoutHeader height="72px">
@@ -38,20 +54,12 @@ const Header: FC = () => {
           <LogoImage />
         </Link>
         <Group h="100%">
-          <Link type="router" href={RoutePath.YourProducts}>
-            Your Products
-          </Link>
-          <Link type="router" href={RoutePath.Marketplace}>
-            Marketplace
-          </Link>
-          <Link type="router" href={RoutePath.MyCart}>
-            My cart
-          </Link>
-          <Link type="router" href={RoutePath.History}>
-            History
-          </Link>
+          {items}
         </Group>
-        <UserMenu />
+        <Group h="100%">
+          <MyCartBanner />
+          <UserMenu />
+        </Group>
       </Container>
     </LayoutHeader>
   );

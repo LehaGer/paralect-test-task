@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { memo, FC } from 'react';
 import { Menu } from '@mantine/core';
-import { IconUserCircle, IconLogout } from '@tabler/icons-react';
+import { IconUserCircle, IconLogout, IconHistory } from '@tabler/icons-react';
 
 import { RoutePath } from 'routes';
 import { accountApi } from 'resources/account';
@@ -24,6 +24,13 @@ const UserMenu: FC = () => {
           border: `1px solid ${theme.colors.gray[4]}`,
         })}
       >
+        <Menu.Item
+          component={Link}
+          href={RoutePath.History}
+          icon={<IconHistory size={16} />}
+        >
+          History
+        </Menu.Item>
         <Menu.Item
           component={Link}
           href={RoutePath.Profile}
