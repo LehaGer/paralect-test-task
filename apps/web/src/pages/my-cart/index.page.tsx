@@ -1,28 +1,19 @@
 import { NextPage } from 'next';
-import { Button, Center, Flex, Loader, Space, Stack, TextInput } from '@mantine/core';
+import { Button, Center, Flex, Loader, Space, Stack } from '@mantine/core';
 import React from 'react';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { productApi } from '../../resources/product';
-import { accountApi } from '../../resources/account';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
 import config from '../../config';
 import { RemoveProductParams } from '../../resources/cart/cart.types';
 
 const MyCart: NextPage = () => {
-  const { data: account } = accountApi.useGet();
-
-  const { data: cart, refetch: refetchCart } = cartApi.useGet();
-
   const {
     data: productListResp,
     isLoading: isProductListLoading,
     refetch: refetchProducts,
-  } = productApi.useList<ProductsListParams>({
-    filter: {
-      cartIds: [cart?._id ?? ''],
-    },
-  });
+  } = productApi.useList<ProductsListParams>({ filter: { isInCard: true } });
 
   const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
 
@@ -57,14 +48,12 @@ const MyCart: NextPage = () => {
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}
-            customerId={account?._id}
             isCartItem
             removeFromCart={() => {
               removeFromCart(
                 { productId: product._id },
                 {
                   onSuccess: async () => {
-                    await refetchCart();
                     await refetchProducts();
                   },
                 },
@@ -88,12 +77,9 @@ const MyCart: NextPage = () => {
       {!!productListResp?.items.length && (
         <Center>
           <form action={`${config.API_URL}/products/checkout/`} method="POST">
-            <section>
-              <TextInput display="none" name="customerId" value={account?._id} />
-              <Button type="submit" role="link">
-                Buy now
-              </Button>
-            </section>
+            <Button type="submit" role="link">
+              Buy now
+            </Button>
           </form>
         </Center>
       )}

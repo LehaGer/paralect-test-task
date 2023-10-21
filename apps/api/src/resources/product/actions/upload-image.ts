@@ -7,7 +7,9 @@ const upload = multer();
 async function validator(ctx: AppKoaContext, next: Next) {
   const { file } = ctx.request;
 
-  ctx.assertClientError(!!file, { global: 'File cannot be empty' });
+  ctx.assertClientError(!!file, {
+    global: 'File cannot be empty',
+  }, 400);
 
   await next();
 }
@@ -20,6 +22,7 @@ async function handler(ctx: AppKoaContext) {
 
   const fileName = `${user._id}-${Date.now()}-${file.originalname}`;
 
+  ctx.status = 201;
   ctx.body = await firebaseStorageService.uploadPublic(
     `product-images/${fileName}`,
     file,

@@ -5,7 +5,7 @@ import {
   Center,
   Container,
   Flex,
-  Image, TextInput,
+  Image,
 } from '@mantine/core';
 
 import {
@@ -25,7 +25,6 @@ interface IProductCard {
   isOwn?: boolean;
   isCartItem?: boolean;
   isHistoryItem?: boolean;
-  customerId?: string;
   addToCart?: () => void;
   removeFromCart?: () => void;
   removeCard?: () => void;
@@ -40,7 +39,6 @@ const ProductCard: FC<IProductCard> = ({
   isOwn = false,
   isCartItem = false,
   isHistoryItem = false,
-  customerId,
   addToCart = () => {},
   removeCard = () => {},
   removeFromCart = () => {},
@@ -86,14 +84,10 @@ const ProductCard: FC<IProductCard> = ({
                   <IconShoppingCartPlus />
                 </Button>
               )}
-              <form action={`${config.API_URL}/products/checkout/`} method="POST">
-                <section>
-                  <TextInput display="none" name="id" value={_id} />
-                  <TextInput display="none" name="customerId" value={customerId} />
-                  <Button className={classes.button} variant="subtle" size="xs" type="submit" role="link">
-                    <IconShoppingBag />
-                  </Button>
-                </section>
+              <form action={`${config.API_URL}/products/checkout/${_id}`} method="POST">
+                <Button className={classes.button} variant="subtle" size="xs" type="submit" role="link">
+                  <IconShoppingBag />
+                </Button>
               </form>
             </>
           )}

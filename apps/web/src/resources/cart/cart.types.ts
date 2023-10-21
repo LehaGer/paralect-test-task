@@ -70,7 +70,6 @@ export interface UpdateCartParams {
 
 export interface AddProductParams {
   productId: string;
-  customerId: string;
 }
 
 export interface RemoveProductParams {

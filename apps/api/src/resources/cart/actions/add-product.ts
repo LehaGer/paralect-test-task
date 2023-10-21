@@ -3,47 +3,39 @@ import { z } from 'zod';
 import { AppKoaContext, AppRouter, Next } from '../../../types';
 import { validateMiddleware } from '../../../middlewares';
 import { Product, productService } from '../../product';
-import { User, userService } from '../../user';
 import { Cart, cartService } from '../index';
 import { analyticsService } from '../../../services';
 
 const schema = z.object({
   productId: z.string(),
-  customerId: z.string(),
 });
 
 interface ValidatedData extends z.infer<typeof schema> {
-  customer: User;
   cart: Cart;
   product: Product;
 }
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-  const { productId, customerId } = ctx.validatedData;
+  const { user } = ctx.state;
+  const { productId } = ctx.validatedData;
 
-  const customer = await userService.findOne({ _id: customerId });
-
-  ctx.assertClientError(!!customer, {
-    ownerEmail: 'User with this id is not exists',
-  });
-
-  const cart = await cartService.findOne({ customerId });
+  const cart = await cartService.findOne({ customerId: user._id });
 
   ctx.assertClientError(!!cart, {
-    ownerEmail: 'Cart with this customer id is not exists',
-  });
+    cart: 'Cart with provided customer id is not exists',
+  }, 404);
 
   ctx.assertClientError(!cart.productIds.includes(productId), {
-    ownerEmail: 'Cart already contains the product',
-  });
+    cart: 'Cart already contains the product',
+  }, 409);
 
   ctx.validatedData.cart = cart;
 
   const product = await productService.findOne({ _id: productId });
 
   ctx.assertClientError(!!product, {
-    ownerEmail: 'User with this id is not exists',
-  });
+    product: 'Product with provided id is not exists',
+  }, 400);
 
   ctx.validatedData.product = product;
 
@@ -51,10 +43,11 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { customer, product } = ctx.validatedData;
+  const { user } = ctx.state;
+  const { product } = ctx.validatedData;
 
   const cart = await cartService.updateOne(
-    { customerId: customer._id },
+    { customerId: user._id },
     ({ productIds: prevProductIds }) => ({
       productIds: [...prevProductIds, product._id],
     }),

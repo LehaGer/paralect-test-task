@@ -23,21 +23,8 @@ export function useGetHistoryList<T>(params: T) {
   return useQuery<IHistoryListResponse>(['carts-history', params], list);
 }
 
-export function useUpdate<T>() {
-  const update = (data: T) => apiService.patch('/carts', data);
-
-  return useMutation<Cart, unknown, T>(update, {
-    onSuccess: (updatedCart) => {
-      queryClient.setQueryData(
-        ['carts'],
-        () => updatedCart,
-      );
-    },
-  });
-}
-
 export function useAddProduct<T>() {
-  const update = (data: T) => apiService.patch('/add-product', data);
+  const update = (data: T) => apiService.patch('/carts/add-product', data);
 
   return useMutation<Cart, unknown, T>(update, {
     onSuccess: (updatedCart) => {
@@ -50,7 +37,7 @@ export function useAddProduct<T>() {
 }
 
 export function useRemoveProduct<T>() {
-  const update = (data: T) => apiService.patch('/remove-product', data);
+  const update = (data: T) => apiService.patch('/carts/remove-product', data);
 
   return useMutation<Cart, unknown, T>(update, {
     onSuccess: (updatedCart) => {

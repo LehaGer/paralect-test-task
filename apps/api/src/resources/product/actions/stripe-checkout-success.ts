@@ -3,35 +3,29 @@ import { z } from 'zod';
 import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
 import config from '../../../config';
-import { Cart, cartService } from '../../cart';
+import { cartService } from '../../cart';
 
-const schema = z.object({
-  cartId: z.string(),
-});
+const schema = z.object({});
 
-interface ValidatedData extends z.infer<typeof schema> {
-  cart: Cart,
-}
+type ValidatedData = z.infer<typeof schema>;
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-  const { cartId } = ctx.validatedData;
+  const { user } = ctx.state;
 
-  const cart = await cartService.findOne({ _id: cartId });
+  const isCartExists = await cartService.exists({ customerId: user._id });
 
-  ctx.assertClientError(!!cart, {
-    ownerEmail: 'Cart with this id is not exists',
-  });
-
-  ctx.validatedData.cart = cart;
+  ctx.assertClientError(isCartExists, {
+    cart: 'Cart with provided customer id is not exists',
+  }, 400);
 
   await next();
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { cart } = ctx.validatedData;
+  const { user } = ctx.state;
 
   await cartService.updateOne(
-    { _id: cart._id },
+    { customerId: user._id },
     () => ({ productIds: [] }),
   );
 

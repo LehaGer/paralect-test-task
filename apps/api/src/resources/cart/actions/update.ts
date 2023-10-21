@@ -7,20 +7,20 @@ import { analyticsService } from 'services';
 import { cartService } from 'resources/cart';
 
 const schema = z.object({
-  id: z.string(),
   productIds: z.string().array().optional(),
 });
 
 type ValidatedData = z.infer<typeof schema>;
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-  const { id, productIds } = ctx.validatedData;
+  const { user } = ctx.state;
+  const { productIds } = ctx.validatedData;
 
-  const isCartExists = await cartService.exists({ _id: id });
+  const isCartExists = await cartService.exists({ customerId: user._id });
 
   ctx.assertClientError(isCartExists, {
-    id: 'Cart with this id is not exists',
-  });
+    cart: 'Cart with provided customer id is not exists',
+  }, 404);
 
   if (productIds) {
     const productsInDb = await productService.find({ _id: { $in: productIds } });
@@ -29,18 +29,19 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
     const notExistingProductsIds = productIds.filter(prodId => !productsIdsInDb.includes(prodId));
 
     ctx.assertClientError(!notExistingProductsIds.length, {
-      ownerEmail: `'Products with id\'s ${notExistingProductsIds.join(', ')} are not exists'`,
-    });
+      product: `'Products with id\'s ${notExistingProductsIds.join(', ')} are not exists'`,
+    }, 400);
   }
 
   await next();
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { id, productIds } = ctx.validatedData;
+  const { user } = ctx.state;
+  const { productIds } = ctx.validatedData;
 
   const cart = await cartService.updateOne(
-    { _id: id },
+    { customerId: user._id },
     () => ({
       productIds,
     }),

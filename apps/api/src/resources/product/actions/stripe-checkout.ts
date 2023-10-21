@@ -5,69 +5,66 @@ import { validateMiddleware } from 'middlewares';
 import { Product, productService } from 'resources/product';
 import stripeService from '../../../services/stripe/stripe.service';
 import config from '../../../config';
-import { User, userService } from 'resources/user';
 import { Cart, cartService } from '../../cart';
+import { uniqBy } from 'lodash';
 
-const schema = z.object({
-  id: z.string().optional(),
-  customerId: z.string(),
-});
+const schema = z.object({});
 
 interface ValidatedData extends z.infer<typeof schema> {
   product?: Product;
-  customer: User;
   cart: Cart;
 }
+type Request = {
+  params: {
+    productId?: string;
+  }
+};
 
-async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-  const { id, customerId } = ctx.validatedData;
 
-  if (id) {
+async function validator(ctx: AppKoaContext<ValidatedData, Request>, next: Next) {
+  const { productId } = ctx.request.params;
+  const { user } = ctx.state;
 
-    const product = await productService.findOne({ _id: id });
+  if (productId) {
+
+    const product = await productService.findOne({ _id: productId });
 
     ctx.assertClientError(!!product, {
-      ownerEmail: 'Product with this id is not exists',
-    });
+      product: 'Product with provided id is not exists',
+    }, 404);
 
     ctx.validatedData.product = product;
 
   }
 
-  const customer = await userService.findOne({ _id: customerId });
-
-  ctx.assertClientError(!!customer, {
-    ownerEmail: 'User with this id is not exists',
-  });
-
-  ctx.validatedData.customer = customer;
-
-  const cart = await cartService.findOne({ customerId });
+  const cart = await cartService.findOne({ customerId: user._id });
 
   ctx.assertClientError(!!cart, {
-    ownerEmail: 'Cart with this customer id is not exists',
-  });
+    cart: 'Cart with provided customer id is not exists',
+  }, 400);
 
   ctx.validatedData.cart = cart;
 
   await next();
 }
 
-async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const { product, customer, cart } = ctx.validatedData;
+async function handler(ctx: AppKoaContext<ValidatedData, Request>) {
+  const { user } = ctx.state;
+  const { product, cart } = ctx.validatedData;
 
-  const cartProductsResp = await productService.find({ _id: { $in: cart.productIds } });
-  const cartProducts = cartProductsResp.results;
-  const products = product ? cartProducts.concat(product) : cartProducts;
+  const cartProducts = await productService
+    .find({ _id: { $in: cart.productIds } })
+    .then(res => res.results);
+  const products = uniqBy(product ? cartProducts.concat(product) : cartProducts, '_id');
 
   const stripeSession = await stripeService.checkout.sessions.create({
-    customer: customer.stripe.customerId,
+    customer: user.stripe.customerId,
     line_items: products.map(prod => ({
       price: prod.stripe.priceId,
       quantity: 1,
     })),
     mode: 'payment',
-    success_url: `${config.API_URL}/products/checkout-success?cartId=${cart._id}`,
+    success_url: `${config.API_URL}/products/checkout-success`,
     cancel_url: `${config.WEB_URL}/marketplace?success=false`,
   });
 
@@ -75,5 +72,5 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
 }
 
 export default (router: AppRouter) => {
-  router.post('/checkout', validateMiddleware(schema), validator, handler);
+  router.post('/checkout/:productId*', validateMiddleware(schema), validator, handler);
 };

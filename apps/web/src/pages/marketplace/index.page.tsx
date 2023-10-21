@@ -26,14 +26,11 @@ import isNumber from 'lodash/isNumber';
 import { PaginationState } from '@tanstack/react-table';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { productApi } from '../../resources/product';
-import { accountApi } from '../../resources/account';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
 import { AddProductParams, RemoveProductParams } from '../../resources/cart/cart.types';
 
 const Marketplace: NextPage = () => {
-  const { data: account } = accountApi.useGet();
-
   const { data: cart, refetch: refetchCart } = cartApi.useGet();
 
   const [params, setParams] = useState<ProductsListParams>({});
@@ -41,7 +38,10 @@ const Marketplace: NextPage = () => {
   const { mutate: addToCart } = cartApi.useAddProduct<AddProductParams>();
   const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
 
-  const { data: productListResp, isLoading: isProductListLoading } = productApi.useList(params);
+  const {
+    data: productListResp,
+    isLoading: isProductListLoading,
+  } = productApi.useList<ProductsListParams>(params);
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
@@ -154,7 +154,7 @@ const Marketplace: NextPage = () => {
           fontWeight: 'bold',
         }}
       >
-        Marketpalce
+        Marketplace
       </Center>
       <Group noWrap position="center" spacing="xs">
         <Skeleton
@@ -236,14 +236,10 @@ const Marketplace: NextPage = () => {
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}
-            customerId={account?._id}
             isInCart={cart?.productIds.includes(product._id)}
             addToCart={() => {
               addToCart(
-                {
-                  productId: product._id,
-                  customerId: account?._id ?? '',
-                },
+                { productId: product._id },
                 {
                   onSuccess: async () => {
                     await refetchCart();

@@ -15,7 +15,7 @@ export interface ProductsListParams {
       from?: number;
       to?: number;
     };
-    ownerEmail?: string;
-    cartIds?: string[] | null;
+    ownerId?: string;
+    isInCard?: boolean;
   };
 }

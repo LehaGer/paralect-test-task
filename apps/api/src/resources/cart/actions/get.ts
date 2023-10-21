@@ -17,8 +17,8 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
   const cart = await cartService.findOne({ customerId: user._id });
 
   ctx.assertClientError(!!cart, {
-    ownerEmail: `Cart with customer id ${user._id} is not exists`,
-  });
+    cart: 'Cart with provided customer id is not exists',
+  }, 404);
 
   ctx.validatedData.cart = cart;
 

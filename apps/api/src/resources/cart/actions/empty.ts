@@ -8,8 +8,8 @@ async function validator(ctx: AppKoaContext, next: Next) {
   const isCartExists = await cartService.exists({ customerId: user._id });
 
   ctx.assertClientError(isCartExists, {
-    id: 'Cart with this customer id is not exists',
-  });
+    cart: 'Cart with provided customer id is not exists',
+  }, 404);
 
   await next();
 }

@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
-import { AppKoaContext, AppRouter, Next } from 'types';
+import { AppKoaContext, AppRouter } from 'types';
 import { validateMiddleware } from 'middlewares';
 import { productService } from 'resources/product';
-import { User, userService } from 'resources/user';
 import { analyticsService } from 'services';
 import stripeService from '../../../services/stripe/stripe.service';
 import * as https from 'https';
@@ -12,31 +11,13 @@ const schema = z.object({
   name: z.string().max(36, 'Name can not contain more then 36 symbols.'),
   price: z.number().min(0, 'Price can not be less then 0'),
   imageUrl: z.string().url('provided image is not a url'),
-  ownerEmail: z.string().email(),
 });
 
-interface ValidatedData extends z.infer<typeof schema> {
-  user: User;
-}
-
-async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-  const { ownerEmail } = ctx.validatedData;
-
-  const user = await userService.findOne({ email: ownerEmail });
-
-  ctx.assertClientError(!!user, {
-    ownerEmail: 'User with this email is not exists',
-  });
-
-  ctx.validatedData.user = user;
-
-  await next();
-}
+type ValidatedData = z.infer<typeof schema>;
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const {
-    name, price, imageUrl, user,
-  } = ctx.validatedData;
+  const { user } = ctx.state;
+  const { name, price, imageUrl } = ctx.validatedData;
 
   const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
     https.get(imageUrl, async (response) => {
@@ -48,7 +29,6 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
 
     } );
   });
-
   const stripeFile = await stripeService.files.create({
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -59,7 +39,6 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
       type: 'image/jpeg',
     },
   });
-
   const stripeFileLink = await stripeService.fileLinks.create({
     file: stripeFile.id,
   });
@@ -68,7 +47,6 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     name,
     images: [stripeFileLink.url ?? ''],
   });
-
   const stripePrice = await stripeService.prices.create({
     product: stripeProduct.id,
     unit_amount: price * 100,
@@ -90,9 +68,10 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     product,
   });
 
+  ctx.status = 201;
   ctx.body = product;
 }
 
 export default (router: AppRouter) => {
-  router.post('/', validateMiddleware(schema), validator, handler);
+  router.post('/', validateMiddleware(schema), handler);
 };

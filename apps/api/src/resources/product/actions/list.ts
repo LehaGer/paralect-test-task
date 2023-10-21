@@ -4,7 +4,8 @@ import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
 import { productService } from 'resources/product';
 import { userService } from 'resources/user';
-import { Cart, cartService } from '../../cart';
+import { cartService } from '../../cart';
+import { isNil } from 'lodash';
 
 const schema = z.object({
   page: z.string().transform(Number).default('1'),
@@ -21,52 +22,32 @@ const schema = z.object({
       from: z.coerce.number().min(0, 'Price can not be less then 0').optional(),
       to: z.coerce.number().min(0, 'Price can not be less then 0').optional(),
     }).optional(),
-    ownerEmail: z.string().email().optional(),
-    cartIds: z.string().array().optional().nullable(),
-  }).nullable().default(null),
+    ownerId: z.string().optional(),
+    isInCard: z.coerce.boolean().optional(),
+  }).optional(),
 });
 
-interface ValidatedData extends z.infer<typeof schema> {
-  carts?: Cart[]
-}
+type ValidatedData = z.infer<typeof schema>;
 
 async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
-
   const { filter } = ctx.validatedData;
 
-  if ( filter !== null && filter?.ownerEmail ) {
-    const isUserExists = await userService.exists({ email: filter.ownerEmail });
-
-    ctx.assertClientError(isUserExists, {
-      ownerEmail: 'User with this email is not exists',
-    });
-
-  }
-  if ( filter !== null && filter?.price ) {
-
-    if (!!filter.price.to && !!filter.price.from) {
+  if (filter?.price) {
+    if ( !isNil(filter.price.to) && !isNil(filter.price.from) ) {
       const isCorrectPriceRange = filter.price.to - filter.price.from >= 0;
 
       ctx.assertClientError(isCorrectPriceRange, {
-        ownerEmail: 'Price "from" must be <= "to" price',
-      });
+        price: 'Price "from" must be <= "to" price',
+      }, 400);
     }
-
   }
 
-  if (filter?.cartIds !== null && filter?.cartIds !== undefined && filter?.cartIds.length !== 0) {
+  if (filter?.ownerId) {
+    const isOwnerExists = await userService.findOne({ _id: filter.ownerId });
 
-    const cartsResp = await cartService.find({ _id: { $in: filter?.cartIds }  });
-    const carts = cartsResp.results;
-    const cartsIdsInDb = carts.map(cart => cart._id);
-
-    const notExistingCartIds = filter?.cartIds.filter(cartId => !cartsIdsInDb.includes(cartId));
-
-    ctx.assertClientError(!notExistingCartIds.length, {
-      ownerEmail: `'Carts with id\'s ${notExistingCartIds.join(', ')} are not exists'`,
-    });
-
-    ctx.validatedData.carts = carts;
+    ctx.assertClientError(isOwnerExists, {
+      user: 'Owner with provided id is not exists',
+    }, 400);
 
   }
 
@@ -75,20 +56,17 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 }
 
 async function handler(ctx: AppKoaContext<ValidatedData>) {
-  const {
-    perPage, page, sort, filter, carts,
-  } = ctx.validatedData;
+  const { user } = ctx.state;
+  const {  perPage, page, sort, filter } = ctx.validatedData;
 
   const nameFilter = filter?.name?.split('\\').join('\\\\').split('.').join('\\.');
   const nameRegExp = nameFilter ? new RegExp(nameFilter, 'gi') : null;
 
-  const owner = filter?.ownerEmail ? await userService.findOne({
-    email: filter?.ownerEmail,
-  }) : null;
-
-  const productIds = carts
-    ?.map(cart => cart.productIds).flat(1)
-    .filter((value, index, array) => array.indexOf(value) === index);
+  const productIds = filter?.isInCard
+    ? await cartService
+      .findOne({ customerId: user._id })
+      .then(res => res?.productIds ?? [])
+    : [];
 
   const products = await productService.find(
     {
@@ -96,7 +74,7 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
         filter?.id ? {
           _id: filter?.id,
         } : {},
-        filter?.cartIds !== null && filter?.cartIds !== undefined ? {
+        filter?.isInCard ? {
           _id: { $in: productIds },
         } : {},
         filter?.name && nameRegExp ? {
@@ -108,8 +86,8 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
             $lte: (filter?.price.to ?? Infinity),
           },
         } : {},
-        filter?.ownerEmail && owner ? {
-          ownerId: owner._id,
+        filter?.ownerId ? {
+          ownerId: filter?.ownerId,
         } : {},
       ],
     },

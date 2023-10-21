@@ -29,7 +29,6 @@ const schema = z.object({
   name: z.string().min(1).max(36, 'Name can not contain more then 36 symbols.'),
   price: z.number().min(0, 'Price can not be less then 0'),
   imageUrl: z.string().url('provided image is not a url'),
-  ownerEmail: z.string().email(),
 });
 
 type CreateNewProductParams = z.infer<typeof schema>;
@@ -49,7 +48,7 @@ interface ProductsListParams {
       from: number;
       to: number;
     };
-    ownerEmail?: string;
+    ownerId?: string;
   };
 }
 
@@ -61,12 +60,6 @@ const YourProducts: NextPage = () => {
   }] = useDisclosure(false);
 
   const { data: account } = accountApi.useGet();
-
-  const [params] = useState<ProductsListParams>({
-    filter: {
-      ownerEmail: account?.email,
-    },
-  });
 
   const [imageFile, setImageFile] = useState<FileWithPath>();
 
@@ -81,9 +74,6 @@ const YourProducts: NextPage = () => {
     reset,
   } = useForm<CreateNewProductParams>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      ownerEmail: account?.email,
-    },
   });
 
   useEffect(() => {
@@ -94,7 +84,7 @@ const YourProducts: NextPage = () => {
     data: productList,
     isLoading: isProductListLoading,
     refetch: updateProductList,
-  } = productApi.useList(params);
+  } = productApi.useList<ProductsListParams>({ filter: { ownerId: account?._id } });
 
   const {
     mutate: uploadImage,
@@ -188,7 +178,6 @@ const YourProducts: NextPage = () => {
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}
-            customerId={account?._id}
             key={product._id}
             removeCard={() => {
               removeCard(product._id, {

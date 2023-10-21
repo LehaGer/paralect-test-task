@@ -16,7 +16,9 @@ async function validator(ctx: AppKoaContext<ValidatedData>, next: Next) {
 
   const filePathFromStorage = await firebaseStorageService.getFilePath(imageUrl);
 
-  ctx.assertClientError(!!filePathFromStorage, { global: 'File with this url does not exist in storage' });
+  ctx.assertClientError(!!filePathFromStorage, {
+    global: 'File with provided url does not exist in storage',
+  }, 404);
 
   ctx.validatedData.filePath = filePathFromStorage;
 
