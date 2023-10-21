@@ -8,13 +8,6 @@ export interface Cart {
   deletedOn?: Date | null;
   customerId: string;
   productIds: string[];
-  stripe?: {
-    sessionId?: string,
-    paymentIntentionId?: string,
-  },
-  isCurrent?: boolean,
-  paymentStatus?: 'canceled' | 'failed' | 'pending' | 'reversed' | 'succeeded',
-  purchasedAt?: Date,
 }
 
 export enum PaymentStatus {
