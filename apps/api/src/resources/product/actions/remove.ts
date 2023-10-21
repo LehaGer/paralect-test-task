@@ -5,6 +5,8 @@ import { validateMiddleware } from 'middlewares';
 import { Product, productService } from 'resources/product';
 import { analyticsService } from 'services';
 import firebaseStorageService from '../../../services/firebase-storage/firebase-storage.service';
+import { cartService } from '../../cart';
+import { pull } from 'lodash';
 
 const schema = z.object({
   id: z.string(),
@@ -30,6 +32,12 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
   const { id } = ctx.validatedData;
 
   const product = await productService.deleteOne({ _id: id });
+  await cartService.updateMany(
+    { productIds: { $all: [id] } },
+    ({ productIds: prevProdIds }) => ({
+      productIds: pull(prevProdIds, id),
+    }),
+  );
   if (product?.imageUrl) {
     const imagePath = await firebaseStorageService.getFilePath(product.imageUrl);
     if (imagePath) await firebaseStorageService.removeObject(imagePath);

@@ -4,6 +4,7 @@ import queryClient from 'query-client';
 import { apiService } from 'services';
 
 import { Product } from './product.types';
+import { Cart } from '../cart/cart.types';
 
 export interface ProductListResponse {
   count: number;
@@ -38,11 +39,24 @@ export function useUpdate<T>() {
 }
 
 export function useRemove<T>() {
-  const remove = (data: T) => apiService.delete('/products', { id: data });
+  let removingProductId: T;
+  const remove = (data: T) => {
+    removingProductId = data;
+    return apiService.delete('/products', { id: data });
+  };
 
   return useMutation<undefined, unknown, T>(remove, {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.setQueryData<Cart>(
+        ['cart'],
+        (prevCartState) => ({
+          ...prevCartState,
+          productIds: prevCartState?.productIds.filter(
+            (prevCartProdId) => prevCartProdId !== removingProductId,
+          ),
+        }) as Cart,
+      );
     },
   });
 }
