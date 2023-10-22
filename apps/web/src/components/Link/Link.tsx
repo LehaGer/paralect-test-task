@@ -15,6 +15,7 @@ interface LinkProps {
   underline?: boolean;
   inherit?: boolean;
   disabled?: boolean;
+  className?: string;
 }
 
 const Link: FC<LinkProps> = ({
@@ -28,22 +29,25 @@ const Link: FC<LinkProps> = ({
   icon,
   inherit,
   align = 'left',
+  className,
 }) => {
   switch (type) {
     case 'router':
       return (
-        <NextLink href={href} passHref style={{ textDecoration: underline ? 'underline' : 'none' }}>
-          <Anchor
-            size={size}
-            inherit={inherit}
-            underline={underline}
-            sx={(theme) => styles(theme, disabled)}
-            align={align}
-          >
-            {icon}
-            {children}
-          </Anchor>
-        </NextLink>
+        <Anchor
+          size={size}
+          inherit={inherit}
+          underline={underline}
+          sx={(theme) => styles(theme, disabled)}
+          align={align}
+          className={className}
+          component={NextLink}
+          href={href}
+          passHref
+        >
+          {icon}
+          {children}
+        </Anchor>
       );
 
     case 'url':

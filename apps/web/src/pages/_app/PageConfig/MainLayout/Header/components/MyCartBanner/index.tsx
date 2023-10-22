@@ -12,7 +12,18 @@ const MyCartBanner: FC = () => {
 
   return (
     <Link type="router" href={RoutePath.MyCart}>
-      <Indicator inline label={cartItemsCount} size={16} disabled={!cartItemsCount}>
+      <Indicator
+        inline
+        label={cartItemsCount}
+        size={15}
+        offset={2}
+        disabled={!cartItemsCount}
+        sx={() => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        })}
+      >
         <IconShoppingCart />
       </Indicator>
     </Link>

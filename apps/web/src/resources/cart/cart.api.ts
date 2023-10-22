@@ -34,11 +34,12 @@ export function useRemoveProduct<T>() {
   const update = (data: T) => apiService.patch('/cart/remove-product', data);
 
   return useMutation<Cart, unknown, T>(update, {
-    onSuccess: (updatedCart) => {
+    onSuccess: async (updatedCart) => {
       queryClient.setQueryData(
         ['cart'],
         () => updatedCart,
       );
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 }
