@@ -23,24 +23,14 @@ export enum SessionStatus {
 }
 
 export interface IHistoryListParams {
-  page?: number;
   perPage?: number;
-  sort?: {
-    createdAt?: 'asc' | 'desc';
-  };
   filter?: {
     startingAfter?: string;
     endingBefore?: string;
-    createdAt?: {
-      from?: number;
-      to?: number;
-    };
-    status?: SessionStatus;
-    paymentStatus?: PaymentStatus;
   };
 }
 
-const historyListItemResponseSchema = z.object({
+const historyItemResponseSchema = z.object({
   id: z.string(),
   status: z.enum(['complete', 'expired', 'open']).nullable(),
   paymentStatus: z.enum(['no_payment_required', 'paid', 'unpaid']),
@@ -54,7 +44,14 @@ const historyListItemResponseSchema = z.object({
   }).array(),
 });
 
-export type HistoryListItemResponse = z.infer<typeof historyListItemResponseSchema>;
+export type HistoryItemResponse = z.infer<typeof historyItemResponseSchema>;
+
+const historyListResponseSchema = z.object({
+  items: historyItemResponseSchema.array(),
+  hasMore: z.boolean(),
+});
+
+export type HistoryListResponse = z.infer<typeof historyListResponseSchema>;
 
 export interface UpdateCartParams {
   id: string,

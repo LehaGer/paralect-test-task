@@ -3,13 +3,7 @@ import { useMutation, useQuery } from 'react-query';
 import queryClient from 'query-client';
 import { apiService } from 'services';
 
-import { Cart, HistoryListItemResponse } from './cart.types';
-
-interface IHistoryListResponse {
-  count: number;
-  items: HistoryListItemResponse[];
-  totalPages: number;
-}
+import { Cart, HistoryListResponse } from './cart.types';
 
 export function useGet() {
   const get = () => apiService.get('/cart');
@@ -60,5 +54,5 @@ export function useEmpty<T>() {
 export function useGetHistoryList<T>(params: T) {
   const list = () => apiService.get('/cart/history', params);
 
-  return useQuery<IHistoryListResponse>(['history', params], list);
+  return useQuery<HistoryListResponse>(['history', params], list);
 }
