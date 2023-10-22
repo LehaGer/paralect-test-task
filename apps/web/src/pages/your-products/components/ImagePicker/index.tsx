@@ -94,6 +94,7 @@ const ImagePicker: FC<IImagePickerProps> = ({
                 onLoad={() => {
                   if (imageUrl) URL.revokeObjectURL(imageUrl);
                 }}
+                height="10em"
               />
             ) : (
               <IconPhoto

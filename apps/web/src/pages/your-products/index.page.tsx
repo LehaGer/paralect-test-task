@@ -9,7 +9,7 @@ import {
   Stack,
   TextInput,
   LoadingOverlay,
-  Space,
+  Space, Pagination,
 } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
@@ -17,13 +17,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import omit from 'lodash/omit';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { FileWithPath } from '@mantine/dropzone';
+import { PaginationState } from '@tanstack/react-table';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { handleError } from '../../utils';
 import { productApi } from '../../resources/product';
 import { accountApi } from '../../resources/account';
 import ImagePicker from './components/ImagePicker';
+import { ProductsListParams } from '../../types';
 
 const schema = z.object({
   name: z.string().min(1).max(36, 'Name can not contain more then 36 symbols.'),
@@ -32,25 +34,6 @@ const schema = z.object({
 });
 
 type CreateNewProductParams = z.infer<typeof schema>;
-
-interface ProductsListParams {
-  page?: number;
-  perPage?: number;
-  sort?: {
-    createdOn?: 'asc' | 'desc';
-    price?: 'asc' | 'desc';
-    name?: 'asc' | 'desc';
-  };
-  filter?: {
-    id?: string;
-    name?: string;
-    price?: {
-      from: number;
-      to: number;
-    };
-    ownerId?: string;
-  };
-}
 
 const YourProducts: NextPage = () => {
   const [isModalOpen, { open: openModal, close: closeModal }] = useDisclosure(false);
@@ -80,10 +63,74 @@ const YourProducts: NextPage = () => {
     register('imageUrl');
   }, [register]);
 
+  const [params, setParams] = useState<ProductsListParams>({});
+
   const {
-    data: productList,
+    data: productListResp,
     isLoading: isProductListLoading,
-  } = productApi.useList<ProductsListParams>({ filter: { ownerId: account?._id } });
+  } = productApi.useList<ProductsListParams>(params);
+
+  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
+    pageIndex: 1,
+    pageSize: 10,
+  });
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize],
+  );
+
+  const onPageChangeHandler = useCallback(
+    (currentPage: any) => {
+      setPagination({ pageIndex: currentPage, pageSize });
+      setParams((prev) => ({
+        ...prev,
+        page: currentPage,
+      }));
+    },
+    [pageSize],
+  );
+
+  const renderPagination = useCallback(() => {
+    const { totalPages } = productListResp || {
+      totalPages: 1,
+    };
+
+    const { pageIndex: memoizedPageIndex } = pagination;
+
+    if (totalPages === 1) return;
+
+    return (
+      <Pagination
+        total={totalPages}
+        value={memoizedPageIndex}
+        onChange={onPageChangeHandler}
+        color="black"
+      />
+    );
+  }, [onPageChangeHandler, productListResp, pagination]);
+
+  useLayoutEffect(() => {
+    setParams((prev) => ({
+      ...prev,
+      perPage: 10,
+      filter: {
+        ...prev.filter,
+        ownerId: account?._id,
+        price: {
+          ...prev.filter?.price,
+        },
+      },
+      page: 1,
+    }));
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 1,
+    }));
+  }, [account]);
 
   const {
     mutate: uploadImage,
@@ -146,16 +193,6 @@ const YourProducts: NextPage = () => {
 
   return (
     <>
-      <Center
-        style={{
-          margin: '1em',
-          fontSize: '2em',
-          color: 'gray',
-          fontWeight: 'bold',
-        }}
-      >
-        Your Products
-      </Center>
       <Flex
         gap="md"
         justify="center"
@@ -169,7 +206,7 @@ const YourProducts: NextPage = () => {
               <Loader color="blue" />
             </Center>
             )}
-        {productList?.items.map((product) => (
+        {productListResp?.items.map((product) => (
           <ProductCard
             _id={product._id}
             isOwn
@@ -180,7 +217,7 @@ const YourProducts: NextPage = () => {
             removeCard={() => { removeCard(product._id); }}
           />
         ))}
-        {(!productList || !productList?.items.length)
+        {(!productListResp || !productListResp?.items.length)
             && (
             <Center style={{
               margin: '1em',
@@ -193,6 +230,8 @@ const YourProducts: NextPage = () => {
             </Center>
             )}
       </Flex>
+      <Space h="xl" />
+      <Center>{renderPagination()}</Center>
       <Center style={{ marginTop: '2em' }}>
         <Button onClick={openModal}>
           <IconPlus />
