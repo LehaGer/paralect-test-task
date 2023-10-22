@@ -1,20 +1,20 @@
 import { NextPage } from 'next';
 import {
-  Center,
-  Flex,
-  Group,
-  Loader,
+  ActionIcon,
+  Button,
+  Center, Container,
+  Flex, Grid,
+  Group, Menu,
   NumberInput,
   Pagination,
   Skeleton,
-  Space,
   Stack,
   TextInput,
   UnstyledButton,
 } from '@mantine/core';
-import { IconSearch, IconX } from '@tabler/icons-react';
+import { IconArrowsDownUp, IconSearch, IconX, IconChevronDown } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
-import {
+import React, {
   ChangeEvent,
   useCallback,
   useEffect,
@@ -29,11 +29,15 @@ import { productApi } from '../../resources/product';
 import { cartApi } from '../../resources/cart';
 import { ProductsListParams } from '../../types';
 import { AddProductParams, RemoveProductParams } from '../../resources/cart/cart.types';
+import ResetFilerButton from './components/ResetFlterButton';
 
 const Marketplace: NextPage = () => {
   const { data: cart } = cartApi.useGet();
 
   const [params, setParams] = useState<ProductsListParams>({});
+
+  const [sortBy, setSortBy] = useState<'createdOn' | 'price' | 'name'>('createdOn');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const { mutate: addToCart } = cartApi.useAddProduct<AddProductParams>();
   const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
@@ -45,7 +49,7 @@ const Marketplace: NextPage = () => {
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
-    pageSize: 10,
+    pageSize: 8,
   });
 
   const pagination = useMemo(
@@ -73,6 +77,8 @@ const Marketplace: NextPage = () => {
     };
 
     const { pageIndex: memoizedPageIndex } = pagination;
+
+    if (totalPages === 1) return;
 
     return (
       <Pagination
@@ -111,6 +117,7 @@ const Marketplace: NextPage = () => {
   useLayoutEffect(() => {
     setParams((prev) => ({
       ...prev,
+      perPage: 8,
       filter: {
         ...prev.filter,
         name: debouncedFilterByName,
@@ -119,6 +126,9 @@ const Marketplace: NextPage = () => {
           from: debouncedFilterByPriceFrom,
           to: debouncedFilterByPriceTo,
         },
+      },
+      sort: {
+        [sortBy]: sortDirection,
       },
       page: 1,
     }));
@@ -130,6 +140,8 @@ const Marketplace: NextPage = () => {
     debouncedFilterByName,
     debouncedFilterByPriceFrom,
     debouncedFilterByPriceTo,
+    sortBy,
+    sortDirection,
   ]);
 
   useEffect(() => {
@@ -145,122 +157,242 @@ const Marketplace: NextPage = () => {
   }, []);
 
   return (
-    <Stack spacing="lg">
-      <Center
-        style={{
-          margin: '1em',
-          fontSize: '2em',
-          color: 'gray',
-          fontWeight: 'bold',
-        }}
-      >
-        Marketplace
-      </Center>
-      <Group noWrap position="center" spacing="xs">
-        <Skeleton
-          height={42}
-          radius="sm"
-          visible={isProductListLoading}
-          width="auto"
-        >
-          <TextInput
-            size="md"
-            value={filterByName}
-            onChange={handleFilterByName}
-            placeholder="Search by name"
-            icon={<IconSearch size={16} />}
-            rightSection={
-              filterByName ? (
-                <UnstyledButton
-                  onClick={() => setFilterByName('')}
-                  sx={{ display: 'flex', alignItems: 'center' }}
-                >
-                  <IconX color="gray" />
-                </UnstyledButton>
-              ) : null
-            }
-            sx={{ width: '350px' }}
-          />
-        </Skeleton>
-        <Skeleton
-          height={42}
-          radius="sm"
-          visible={isProductListLoading}
-          width="auto"
-          sx={{ overflow: !isProductListLoading ? 'initial' : 'overflow' }}
-        >
-          <NumberInput
-            size="md"
-            value={filterByPriceFrom}
-            onChange={handleFilterByPriceFrom}
-            placeholder="from price"
-            icon={<IconSearch size={16} />}
-            sx={{ width: '150px' }}
-            min={0}
-          />
-        </Skeleton>
-        <Skeleton
-          height={42}
-          radius="sm"
-          visible={isProductListLoading}
-          width="auto"
-          sx={{ overflow: !isProductListLoading ? 'initial' : 'overflow' }}
-        >
-          <NumberInput
-            size="md"
-            value={filterByPriceTo}
-            onChange={handleFilterByPriceTo}
-            placeholder="to price"
-            icon={<IconSearch size={16} />}
-            sx={{ width: '150px' }}
-            min={0}
-          />
-        </Skeleton>
-      </Group>
-      <Flex
-        gap="md"
-        justify="center"
-        align="center"
-        direction="row"
-        wrap="wrap"
-      >
-        {isProductListLoading && (
-          <Center>
-            <Loader color="blue" />
-          </Center>
-        )}
-        {productListResp?.items.map((product) => (
-          <ProductCard
-            key={product._id}
-            _id={product._id}
-            price={product.price}
-            name={product.name}
-            imageUrl={product.imageUrl}
-            isInCart={cart?.productIds.includes(product._id)}
-            addToCart={() => {
-              addToCart({ productId: product._id });
-            }}
-            removeFromCart={() => {
-              removeFromCart({ productId: product._id });
-            }}
-          />
-        ))}
-        {!isProductListLoading && !productListResp?.items.length && (
-          <Center
-            style={{
-              margin: '1em',
-              fontSize: '1.5em',
-              color: '#b9b9b9',
-              fontWeight: 'bold',
-            }}
+    <Container
+      my="md"
+      sx={() => ({
+        width: '100%',
+        maxWidth: '100%',
+      })}
+    >
+      <Grid gutter="xl">
+        <Grid.Col span="content">
+          <Skeleton
+            radius="md"
+            visible={isProductListLoading}
+            width="auto"
           >
-            There no products in marketplace yet
-          </Center>
-        )}
-      </Flex>
-      <Center>{renderPagination()}</Center>
-      <Space h="xl" />
-    </Stack>
+            <Stack
+              sx={(theme) => ({
+                backgroundColor: theme.white,
+                borderRadius: '1em',
+                padding: '2em',
+                border: `1px solid ${theme.colors.gray[2]}`,
+              })}
+            >
+              <Group>
+                <Container sx={(theme) => ({
+                  fontSize: '1.2em',
+                  fontWeight: 'bold',
+                  color: theme.colors.gray[7],
+                  textAlign: 'left',
+                  margin: 0,
+                  padding: 0,
+                })}
+                >
+                  Filters
+                </Container>
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  radius="xl"
+                  size="xs"
+                  compact
+                  sx={{
+                    width: '7em',
+                    marginLeft: 'auto',
+                  }}
+                  type="reset"
+                  rightIcon={<IconX size={15} spacing={0} style={{ margin: 0 }} />}
+                  onClick={() => {
+                    handleFilterByPriceFrom('');
+                    handleFilterByPriceTo('');
+                  }}
+                >
+                  reset all
+                </Button>
+              </Group>
+              <Stack spacing=".5em">
+                <Container sx={(theme) => ({
+                  fontSize: '1em',
+                  fontWeight: 'bold',
+                  color: theme.colors.gray[7],
+                  textAlign: 'left',
+                  margin: 0,
+                  padding: 0,
+                })}
+                >
+                  Price
+                </Container>
+                <Group grow>
+                  <NumberInput
+                    value={filterByPriceFrom ?? ''}
+                    onChange={handleFilterByPriceFrom}
+                    icon={<Container>From</Container>}
+                    iconWidth={60}
+                    sx={{ /* width: '150px', paddingLeft: '10em' */}}
+                    min={0}
+                    max={filterByPriceTo ?? Infinity}
+                  />
+                  <NumberInput
+                    value={filterByPriceTo ?? ''}
+                    onChange={handleFilterByPriceTo}
+                    icon={<Container>To</Container>}
+                    iconWidth={35}
+                    sx={{ width: '100px' }}
+                    min={filterByPriceFrom ?? 0}
+                  />
+                </Group>
+              </Stack>
+            </Stack>
+          </Skeleton>
+        </Grid.Col>
+        <Grid.Col span="auto">
+          <Stack>
+            <Skeleton
+              radius="md"
+              visible={isProductListLoading}
+              width="auto"
+              height={42}
+            >
+              <TextInput
+                size="md"
+                value={filterByName}
+                onChange={handleFilterByName}
+                placeholder="Type to search..."
+                radius="md"
+                icon={<IconSearch size={16} />}
+                rightSection={
+                    filterByName ? (
+                      <UnstyledButton
+                        onClick={() => setFilterByName('')}
+                        sx={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        <IconX color="gray" />
+                      </UnstyledButton>
+                    ) : null
+                  }
+              />
+            </Skeleton>
+            <Grid>
+              <Grid.Col span="auto">
+                <Stack align="flex-start">
+                  <Container w="max-content" sx={{ margin: 0, paddingLeft: 5, fontWeight: 'bold' }}>
+                    {`${productListResp?.count ?? 0} results`}
+                  </Container>
+                  <Flex>
+                    {filterByName && (
+                    <ResetFilerButton
+                      content={filterByName}
+                      filterSkipHandler={() => {
+                        setFilterByName('');
+                      }}
+                    />
+                    )}
+                    {(filterByPriceFrom || filterByPriceTo) && (
+                    <ResetFilerButton
+                      content={`$${filterByPriceFrom ?? 0} - $${filterByPriceTo ?? '∞'}`}
+                      filterSkipHandler={() => {
+                        handleFilterByPriceFrom('');
+                        handleFilterByPriceTo('');
+                      }}
+                    />
+                    )}
+                  </Flex>
+                </Stack>
+              </Grid.Col>
+              <Grid.Col span="content">
+                <Group spacing={0}>
+                  <ActionIcon
+                    radius="xl"
+                    color="gray"
+                    variant="subtle"
+                    size={15}
+                    style={{ margin: 0 }}
+                    onClick={() => {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                    }}
+                  >
+                    <IconArrowsDownUp size={15} />
+                  </ActionIcon>
+
+                  <Menu width={200} shadow="md" zIndex={999}>
+                    <Menu.Target>
+                      <Button
+                        compact
+                        variant="subtle"
+                        color="gray"
+                        radius="xl"
+                        rightIcon={(<IconChevronDown size={15} />)}
+                        size="sm"
+                      >
+                        {`Sorted by ${sortBy !== 'createdOn' ? sortBy : 'creation time'}`}
+                      </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item onClick={() => { setSortBy('createdOn'); }}>creation time</Menu.Item>
+                      <Menu.Item onClick={() => { setSortBy('price'); }}>price</Menu.Item>
+                      <Menu.Item onClick={() => { setSortBy('name'); }}>name</Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+
+                </Group>
+              </Grid.Col>
+            </Grid>
+            <Skeleton
+              radius="md"
+              visible={isProductListLoading}
+              width="auto"
+              mih={350}
+            >
+              <Flex
+                gap="md"
+                justify="center"
+                align="center"
+                direction="row"
+                wrap="wrap"
+              >
+                {productListResp?.items.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    _id={product._id}
+                    price={product.price}
+                    name={product.name}
+                    imageUrl={product.imageUrl}
+                    isInCart={cart?.productIds.includes(product._id)}
+                    addToCart={() => {
+                      addToCart({ productId: product._id });
+                    }}
+                    removeFromCart={() => {
+                      removeFromCart({ productId: product._id });
+                    }}
+                  />
+                ))}
+                {!isProductListLoading && !productListResp?.items.length && (
+                <Center
+                  style={{
+                    margin: '1em',
+                    fontSize: '1.5em',
+                    color: '#b9b9b9',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  There no products in marketplace yet
+                </Center>
+                )}
+              </Flex>
+            </Skeleton>
+            <Skeleton
+              radius="md"
+              visible={isProductListLoading}
+              width="auto"
+              height={42}
+            >
+              <Center>{renderPagination()}</Center>
+            </Skeleton>
+          </Stack>
+        </Grid.Col>
+      </Grid>
+    </Container>
   );
 };
 
