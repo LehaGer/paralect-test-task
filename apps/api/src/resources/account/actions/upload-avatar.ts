@@ -1,8 +1,8 @@
 import multer from '@koa/multer';
 
-import { cloudStorageService } from 'services';
 import { Next, AppKoaContext, AppRouter } from 'types';
 import { userService } from 'resources/user';
+import firebaseStorageService from '../../../services/firebase-storage/firebase-storage.service';
 
 const upload = multer();
 
@@ -18,14 +18,12 @@ async function handler(ctx: AppKoaContext) {
   const { user } = ctx.state;
   const { file } = ctx.request;
 
-  if (user.avatarUrl) {
-    const fileKey = cloudStorageService.helpers.getFileKey(user.avatarUrl);
-
-    await cloudStorageService.deleteObject(fileKey);
-  }
-
   const fileName = `${user._id}-${Date.now()}-${file.originalname}`;
-  const { Location } = await cloudStorageService.uploadPublic(`avatars/${fileName}`, file);
+
+  const Location = await firebaseStorageService.uploadPublic(
+    `avatar-images/${fileName}`,
+    file,
+  );
 
   const updatedUser = await userService.updateOne(
     { _id: user._id },
