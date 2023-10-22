@@ -39,10 +39,6 @@ module.exports = {
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'error',
     'object-curly-newline': 'off',
-    'no-restricted-imports': ['error', {
-      name: 'lodash',
-      message: 'Import individual methods from the Lodash module',
-    }],
     'max-classes-per-file': 'off',
     'no-proto': 'off',
     'consistent-return': 'off',
