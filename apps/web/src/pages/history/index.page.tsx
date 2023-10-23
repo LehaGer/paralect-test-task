@@ -1,8 +1,9 @@
 import { NextPage } from 'next';
 import { Center, Flex, Loader, Space, Stack } from '@mantine/core';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { cartApi } from 'resources/cart';
 import { IHistoryListParams } from 'resources/cart/cart.types';
+import { notifications } from '@mantine/notifications';
 import HistoryElement from './components/HistoryElement';
 
 const History: NextPage = () => {
@@ -17,6 +18,18 @@ const History: NextPage = () => {
   } = cartApi.useGetHistoryList<IHistoryListParams>(params);
 
   const historyList = historyListResp?.items;
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+
+    if (query.get('success')) {
+      notifications.show({
+        title: 'Success!',
+        message: 'Products successfully purchased',
+        color: 'green',
+      });
+    }
+  }, []);
 
   return (
     <Stack spacing="lg">

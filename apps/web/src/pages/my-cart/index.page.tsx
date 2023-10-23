@@ -1,6 +1,7 @@
 import { NextPage } from 'next';
 import { Button, Center, Flex, Loader, Space, Stack } from '@mantine/core';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { notifications } from '@mantine/notifications';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { productApi } from '../../resources/product';
 import { cartApi } from '../../resources/cart';
@@ -15,6 +16,18 @@ const MyCart: NextPage = () => {
   } = productApi.useList<ProductsListParams>({ filter: { isInCard: true } });
 
   const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+
+    if (query.get('canceled')) {
+      notifications.show({
+        title: 'Something went wrong...',
+        message: 'Products purchasing was rejected',
+        color: 'red',
+      });
+    }
+  }, []);
 
   return (
     <Stack spacing="lg">

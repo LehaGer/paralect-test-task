@@ -51,7 +51,7 @@ const PageConfig: FC<PageConfigProps> = ({ children }) => {
   }
 
   if (scope === ScopeType.PUBLIC && account) {
-    push(RoutePath.Marketplace);
+    push(RoutePath.Home);
     return null;
   }
 
