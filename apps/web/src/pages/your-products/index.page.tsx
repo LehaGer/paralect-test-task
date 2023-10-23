@@ -219,7 +219,8 @@ const YourProducts: NextPage = () => {
             removeCard={() => { removeCard(product._id); }}
           />
         ))}
-        {(!productListResp || !productListResp?.items.length)
+        {!isProductListLoading
+            && !productListResp?.items.length
             && (
             <Center className={classes.notExistsMsg}>
               You have no own products yet
