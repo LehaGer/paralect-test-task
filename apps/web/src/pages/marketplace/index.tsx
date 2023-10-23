@@ -151,46 +151,33 @@ const Marketplace: NextPage = () => {
     >
       <Grid gutter="xl">
         <Grid.Col span="content">
-          <Skeleton
-            radius="md"
-            visible={isProductListLoading}
-            width="auto"
-          >
-            <Filter
-              filterByPriceFrom={filterByPriceFrom}
-              filterByPriceTo={filterByPriceTo}
-              setPriceFrom={handleFilterByPriceFrom}
-              setPriceTo={handleFilterByPriceTo}
-            />
-          </Skeleton>
+          <Filter
+            filterByPriceFrom={filterByPriceFrom}
+            filterByPriceTo={filterByPriceTo}
+            setPriceFrom={handleFilterByPriceFrom}
+            setPriceTo={handleFilterByPriceTo}
+          />
         </Grid.Col>
         <Grid.Col span="auto">
           <Stack>
-            <Skeleton
+            <TextInput
+              size="md"
+              value={filterByName}
+              onChange={handleFilterByName}
+              placeholder="Type to search..."
               radius="md"
-              visible={isProductListLoading}
-              width="auto"
-              height={42}
-            >
-              <TextInput
-                size="md"
-                value={filterByName}
-                onChange={handleFilterByName}
-                placeholder="Type to search..."
-                radius="md"
-                icon={<IconSearch size={16} />}
-                rightSection={
-                    filterByName ? (
-                      <UnstyledButton
-                        onClick={() => setFilterByName('')}
-                        sx={{ display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconX color="gray" />
-                      </UnstyledButton>
-                    ) : null
-                  }
-              />
-            </Skeleton>
+              icon={<IconSearch size={16} />}
+              rightSection={
+                  filterByName ? (
+                    <UnstyledButton
+                      onClick={() => setFilterByName('')}
+                      sx={{ display: 'flex', alignItems: 'center' }}
+                    >
+                      <IconX color="gray" />
+                    </UnstyledButton>
+                  ) : null
+                }
+            />
             <Grid>
               <Grid.Col span="auto">
                 <Stack align="flex-start">
