@@ -1,13 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { initializeApp } from 'firebase/app';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { getDownloadURL, getStorage, ref, uploadBytes, deleteObject } from 'firebase/storage';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { File } from '@koa/multer';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { UploadResult } from '@firebase/storage';
-import config from '../../config';
+import config from 'config';
 
 const firebaseService = initializeApp({
   apiKey: config.FIREBASE_API_KEY,
@@ -20,12 +14,16 @@ const firebaseService = initializeApp({
 });
 const storage = getStorage(firebaseService);
 
-const uploadPublic = async (fileName: string, file: File): Promise<UploadResult> => {
+const uploadPublic = async (fileName: string, file: File): Promise<string> => {
   const storageRef = ref(storage);
   const publicSectionRef = ref(storageRef, 'public');
   const fileRef = ref(publicSectionRef, fileName);
 
-  const { ref: refResult } = await uploadBytes(fileRef, file.buffer);
+  const { ref: refResult } = await uploadBytes(
+    fileRef,
+    file.buffer,
+    { contentType: 'image/jpeg' },
+  );
 
   return getDownloadURL(refResult);
 };
