@@ -6,9 +6,6 @@ import { NextPage } from 'next';
 import { TextInput, PasswordInput, Button, Group, Stack, Title, Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 
-import { GoogleIcon } from 'public/icons';
-
-import config from 'config';
 import { RoutePath } from 'routes';
 import { handleError } from 'utils';
 import { Link } from 'components';
@@ -82,14 +79,6 @@ const SignIn: NextPage = () => {
         </Stack>
 
         <Stack spacing={34}>
-          <Button
-            component="a"
-            leftIcon={<GoogleIcon />}
-            href={`${config.API_URL}/account/sign-in/google/auth`}
-            variant="outline"
-          >
-            Continue with Google
-          </Button>
           <Group sx={{ fontSize: '16px', justifyContent: 'center' }} spacing={12}>
             Don’t have an account?
             <Link

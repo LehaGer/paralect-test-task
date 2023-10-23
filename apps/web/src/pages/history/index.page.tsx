@@ -5,6 +5,7 @@ import { cartApi } from 'resources/cart';
 import { IHistoryListParams } from 'resources/cart/cart.types';
 import { notifications } from '@mantine/notifications';
 import HistoryElement from './components/HistoryElement';
+import { useStyles } from './styles';
 
 const History: NextPage = () => {
   const [params] = useState<IHistoryListParams>({
@@ -14,7 +15,6 @@ const History: NextPage = () => {
   const {
     data: historyListResp,
     isLoading: isHistoryLoading,
-    // refetch: refetchCart,
   } = cartApi.useGetHistoryList<IHistoryListParams>(params);
 
   const historyList = historyListResp?.items;
@@ -31,16 +31,11 @@ const History: NextPage = () => {
     }
   }, []);
 
+  const { classes } = useStyles();
+
   return (
     <Stack spacing="lg">
-      <Center
-        style={{
-          margin: '1em',
-          fontSize: '2em',
-          color: 'gray',
-          fontWeight: 'bold',
-        }}
-      >
+      <Center className={classes.pageName}>
         History
       </Center>
       <Flex
@@ -56,14 +51,7 @@ const History: NextPage = () => {
           </Center>
         )}
         {!isHistoryLoading && !historyList?.length && (
-          <Center
-            style={{
-              margin: '1em',
-              fontSize: '1.5em',
-              color: '#b9b9b9',
-              fontWeight: 'bold',
-            }}
-          >
+          <Center className={classes.notExistsMsg}>
             There no carts in history yet
           </Center>
         )}

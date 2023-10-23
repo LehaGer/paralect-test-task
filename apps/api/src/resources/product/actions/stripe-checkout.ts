@@ -65,7 +65,7 @@ async function handler(ctx: AppKoaContext<ValidatedData, Request>) {
     })),
     mode: 'payment',
     success_url: `${config.API_URL}/products/checkout-success`,
-    cancel_url: `${config.WEB_URL}/marketplace?canceled=true`,
+    cancel_url: `${config.WEB_URL}/my-cart?canceled=true`,
   });
 
   ctx.response.redirect(stripeSession.url ?? `${config.WEB_URL}/my-cart?canceled=true`);

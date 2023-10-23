@@ -10,18 +10,6 @@ export interface Cart {
   productIds: string[];
 }
 
-export enum PaymentStatus {
-  no_payment_required = 'no_payment_required',
-  paid = 'paid',
-  unpaid = 'unpaid',
-}
-
-export enum SessionStatus {
-  complete = 'complete',
-  expired = 'expired',
-  open = 'open',
-}
-
 export interface IHistoryListParams {
   perPage?: number;
   filter?: {
@@ -53,11 +41,6 @@ const historyListResponseSchema = z.object({
 
 export type HistoryListResponse = z.infer<typeof historyListResponseSchema>;
 
-export interface UpdateCartParams {
-  id: string,
-  productIds?: string[],
-}
-
 export interface AddProductParams {
   productId: string;
 }
@@ -65,10 +48,3 @@ export interface AddProductParams {
 export interface RemoveProductParams {
   productId: string;
 }
-
-const CreateCartSchema = z.object({
-  customerId: z.string(),
-  productIds: z.string().array().optional(),
-});
-
-export type CreateCartParams = z.infer<typeof CreateCartSchema>;

@@ -36,7 +36,14 @@ const UnauthorizedLayout: FC<UnauthorizedLayoutProps> = ({ children }) => {
           alt="app info"
           src="../images/intro.png"
           height="95vh"
-          style={{ margin: 'auto 0em', overflow: 'hidden', width: '90%', borderRadius: '2vh' }}
+          style={{
+            margin: 'auto 0em',
+            overflow: 'hidden',
+            width: '90%',
+            borderRadius: '2vh',
+            userSelect: 'none',
+            pointerEvents: 'none',
+          }}
         />
       </MediaQuery>
     </SimpleGrid>

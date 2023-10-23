@@ -5,7 +5,6 @@ import {
   Center, Container,
   Flex, Grid,
   Group, Menu,
-  NumberInput,
   Pagination,
   Skeleton,
   Stack,
@@ -23,28 +22,28 @@ import React, {
 } from 'react';
 import isNumber from 'lodash/isNumber';
 import { PaginationState } from '@tanstack/react-table';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import { productApi } from '../../resources/product';
-import { cartApi } from '../../resources/cart';
-import { ProductsListParams } from '../../types';
-import { AddProductParams, RemoveProductParams } from '../../resources/cart/cart.types';
+import ProductCard from 'components/ProductCard/ProductCard';
+import { productApi, productTypes } from 'resources/product';
+import { cartApi, cartTypes } from 'resources/cart';
 import ResetFilerButton from './components/ResetFlterButton';
+import Filter from './components/Filter';
+import { useStyles } from './styles';
 
 const Marketplace: NextPage = () => {
   const { data: cart } = cartApi.useGet();
 
-  const [params, setParams] = useState<ProductsListParams>({});
+  const [params, setParams] = useState<productTypes.ProductsListParams>({});
 
   const [sortBy, setSortBy] = useState<'createdOn' | 'price' | 'name'>('createdOn');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const { mutate: addToCart } = cartApi.useAddProduct<AddProductParams>();
-  const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
+  const { mutate: addToCart } = cartApi.useAddProduct<cartTypes.AddProductParams>();
+  const { mutate: removeFromCart } = cartApi.useRemoveProduct<cartTypes.RemoveProductParams>();
 
   const {
     data: productListResp,
     isLoading: isProductListLoading,
-  } = productApi.useList<ProductsListParams>(params);
+  } = productApi.useList<productTypes.ProductsListParams>(params);
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
@@ -77,7 +76,7 @@ const Marketplace: NextPage = () => {
 
     const { pageIndex: memoizedPageIndex } = pagination;
 
-    if (totalPages === 1) return;
+    if (totalPages <= 1) return;
 
     return (
       <Pagination
@@ -143,13 +142,12 @@ const Marketplace: NextPage = () => {
     sortDirection,
   ]);
 
+  const { classes } = useStyles();
+
   return (
     <Container
       my="md"
-      sx={() => ({
-        width: '100%',
-        maxWidth: '100%',
-      })}
+      className={classes.pageRoot}
     >
       <Grid gutter="xl">
         <Grid.Col span="content">
@@ -158,79 +156,12 @@ const Marketplace: NextPage = () => {
             visible={isProductListLoading}
             width="auto"
           >
-            <Stack
-              sx={(theme) => ({
-                backgroundColor: theme.white,
-                borderRadius: '1em',
-                padding: '2em',
-                border: `1px solid ${theme.colors.gray[2]}`,
-              })}
-            >
-              <Group>
-                <Container sx={(theme) => ({
-                  fontSize: '1.2em',
-                  fontWeight: 'bold',
-                  color: theme.colors.gray[7],
-                  textAlign: 'left',
-                  margin: 0,
-                  padding: 0,
-                })}
-                >
-                  Filters
-                </Container>
-                <Button
-                  variant="subtle"
-                  color="gray"
-                  radius="xl"
-                  size="xs"
-                  compact
-                  sx={{
-                    width: '7em',
-                    marginLeft: 'auto',
-                  }}
-                  type="reset"
-                  rightIcon={<IconX size={15} spacing={0} style={{ margin: 0 }} />}
-                  onClick={() => {
-                    handleFilterByPriceFrom('');
-                    handleFilterByPriceTo('');
-                  }}
-                >
-                  reset all
-                </Button>
-              </Group>
-              <Stack spacing=".5em">
-                <Container sx={(theme) => ({
-                  fontSize: '1em',
-                  fontWeight: 'bold',
-                  color: theme.colors.gray[7],
-                  textAlign: 'left',
-                  margin: 0,
-                  padding: 0,
-                })}
-                >
-                  Price
-                </Container>
-                <Group grow>
-                  <NumberInput
-                    value={filterByPriceFrom ?? ''}
-                    onChange={handleFilterByPriceFrom}
-                    icon={<Container>From</Container>}
-                    iconWidth={60}
-                    sx={{ /* width: '150px', paddingLeft: '10em' */}}
-                    min={0}
-                    max={filterByPriceTo ?? Infinity}
-                  />
-                  <NumberInput
-                    value={filterByPriceTo ?? ''}
-                    onChange={handleFilterByPriceTo}
-                    icon={<Container>To</Container>}
-                    iconWidth={35}
-                    sx={{ width: '100px' }}
-                    min={filterByPriceFrom ?? 0}
-                  />
-                </Group>
-              </Stack>
-            </Stack>
+            <Filter
+              filterByPriceFrom={filterByPriceFrom}
+              filterByPriceTo={filterByPriceTo}
+              setPriceFrom={handleFilterByPriceFrom}
+              setPriceTo={handleFilterByPriceTo}
+            />
           </Skeleton>
         </Grid.Col>
         <Grid.Col span="auto">
@@ -263,7 +194,7 @@ const Marketplace: NextPage = () => {
             <Grid>
               <Grid.Col span="auto">
                 <Stack align="flex-start">
-                  <Container w="max-content" sx={{ margin: 0, paddingLeft: 5, fontWeight: 'bold' }}>
+                  <Container w="max-content" className={classes.responseSummary}>
                     {`${productListResp?.count ?? 0} results`}
                   </Container>
                   <Flex>
@@ -355,14 +286,7 @@ const Marketplace: NextPage = () => {
                   />
                 ))}
                 {!isProductListLoading && !productListResp?.items.length && (
-                <Center
-                  style={{
-                    margin: '1em',
-                    fontSize: '1.5em',
-                    color: '#b9b9b9',
-                    fontWeight: 'bold',
-                  }}
-                >
+                <Center className={classes.productsNotExistsMsg}>
                   There no products in marketplace yet
                 </Center>
                 )}

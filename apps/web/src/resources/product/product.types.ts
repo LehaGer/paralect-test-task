@@ -15,3 +15,23 @@ export interface Product {
   ownerEmail: string;
   stripe: StripeIdsInfo;
 }
+
+export interface ProductsListParams {
+  page?: number;
+  perPage?: number;
+  sort?: {
+    createdOn?: 'asc' | 'desc';
+    price?: 'asc' | 'desc';
+    name?: 'asc' | 'desc';
+  };
+  filter?: {
+    id?: string;
+    name?: string;
+    price?: {
+      from?: number;
+      to?: number;
+    };
+    ownerId?: string;
+    isInCard?: boolean;
+  };
+}

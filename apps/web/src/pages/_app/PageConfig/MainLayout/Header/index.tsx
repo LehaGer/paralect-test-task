@@ -15,7 +15,7 @@ import UserMenu from './components/UserMenu';
 import ShadowLoginBanner from './components/ShadowLoginBanner';
 import MyCartBanner from './components/MyCartBanner';
 
-import styles from './styles';
+import { styles, useStyles } from './styles';
 
 const links = [
   { link: RoutePath.Marketplace, label: 'Marketplace' },
@@ -25,6 +25,8 @@ const links = [
 const Header: FC = () => {
   const { data: account } = accountApi.useGet();
   const pathname = usePathname();
+
+  const { classes } = useStyles();
 
   if (!account) return null;
 
@@ -51,32 +53,14 @@ const Header: FC = () => {
     <LayoutHeader height="72px">
       {account.isShadow && <ShadowLoginBanner email={account.email} />}
       <Container
-        sx={(theme) => ({
-          minHeight: '72px',
-          padding: '0 32px',
-          display: 'flex',
-          flex: '1 1 auto',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: theme.colors.gray[0],
-        })}
+        className={classes.linksWrapper}
         fluid
       >
-        <Link type="router" href={RoutePath.Home} underline={false}>
-          <Container sx={(theme) => ({
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            color: theme.colors.gray[7],
-            fontSize: '1.5em',
-            fontWeight: 'bold',
-            gap: '10px',
-          })}
-          >
+        <Link type="router" href={RoutePath.Marketplace} underline={false}>
+          <Container className={classes.mainLogoWrapper}>
             <LogoImage />
             Shopy
           </Container>
-
         </Link>
         <Group h="100%">
           {items}

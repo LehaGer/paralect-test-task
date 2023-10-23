@@ -3,8 +3,8 @@ import { useMutation, useQuery } from 'react-query';
 import queryClient from 'query-client';
 import { apiService } from 'services';
 
+import { cartTypes } from 'resources/cart';
 import { Product } from './product.types';
-import { Cart } from '../cart/cart.types';
 
 export interface ProductListResponse {
   count: number;
@@ -48,14 +48,14 @@ export function useRemove<T>() {
   return useMutation<undefined, unknown, T>(remove, {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.setQueryData<Cart>(
+      queryClient.setQueryData<cartTypes.Cart>(
         ['cart'],
         (prevCartState) => ({
           ...prevCartState,
           productIds: prevCartState?.productIds.filter(
             (prevCartProdId) => prevCartProdId !== removingProductId,
           ),
-        }) as Cart,
+        }) as cartTypes.Cart,
       );
     },
   });

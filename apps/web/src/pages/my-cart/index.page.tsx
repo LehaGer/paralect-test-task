@@ -2,20 +2,19 @@ import { NextPage } from 'next';
 import { Button, Center, Flex, Loader, Space, Stack } from '@mantine/core';
 import React, { useEffect } from 'react';
 import { notifications } from '@mantine/notifications';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import { productApi } from '../../resources/product';
-import { cartApi } from '../../resources/cart';
-import { ProductsListParams } from '../../types';
-import config from '../../config';
-import { RemoveProductParams } from '../../resources/cart/cart.types';
+import ProductCard from 'components/ProductCard/ProductCard';
+import { productApi, productTypes } from 'resources/product';
+import { cartApi, cartTypes } from 'resources/cart';
+import config from 'config';
+import { useStyles } from './styles';
 
 const MyCart: NextPage = () => {
   const {
     data: productListResp,
     isLoading: isProductListLoading,
-  } = productApi.useList<ProductsListParams>({ filter: { isInCard: true } });
+  } = productApi.useList<productTypes.ProductsListParams>({ filter: { isInCard: true } });
 
-  const { mutate: removeFromCart } = cartApi.useRemoveProduct<RemoveProductParams>();
+  const { mutate: removeFromCart } = cartApi.useRemoveProduct<cartTypes.RemoveProductParams>();
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -29,16 +28,11 @@ const MyCart: NextPage = () => {
     }
   }, []);
 
+  const { classes } = useStyles();
+
   return (
     <Stack spacing="lg">
-      <Center
-        style={{
-          margin: '1em',
-          fontSize: '2em',
-          color: 'gray',
-          fontWeight: 'bold',
-        }}
-      >
+      <Center className={classes.pageName}>
         My Cart
       </Center>
       <Flex
@@ -67,14 +61,7 @@ const MyCart: NextPage = () => {
           />
         ))}
         {!isProductListLoading && !productListResp?.items.length && (
-          <Center
-            style={{
-              margin: '1em',
-              fontSize: '1.5em',
-              color: '#b9b9b9',
-              fontWeight: 'bold',
-            }}
-          >
+          <Center className={classes.notExistsMsg}>
             There no products in marketplace yet
           </Center>
         )}

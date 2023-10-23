@@ -2,10 +2,11 @@ import React, { FC } from 'react';
 import { Center, Container, Grid, Paper } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import { isNil } from 'lodash';
-import { HistoryItemResponse } from '../../../../resources/cart/cart.types';
-import ProductCard from '../../../../components/ProductCard/ProductCard';
+import { cartTypes } from 'resources/cart';
+import ProductCard from 'components/ProductCard/ProductCard';
+import { useStyles } from './styles';
 
-type IHistoryElementProps = HistoryItemResponse;
+type IHistoryElementProps = cartTypes.HistoryItemResponse;
 
 const HistoryElement: FC<IHistoryElementProps> = ({
   id,
@@ -36,6 +37,8 @@ const HistoryElement: FC<IHistoryElementProps> = ({
     },
   ];
 
+  const { classes } = useStyles();
+
   return (
     <Paper
       shadow="xs"
@@ -45,32 +48,16 @@ const HistoryElement: FC<IHistoryElementProps> = ({
     >
       <Grid
         grow
-        sx={{
-          margin: '1em',
-          marginBottom: '3em',
-          width: '25em',
-        }}
+        className={classes.infoSection}
       >
         {fieldDataSet
           .filter((el) => !isNil(el.value))
           .map((field) => (
-            <Grid.Col span={6} sx={{ width: 'max-content' }}>
-              <Container
-                sx={(theme) => ({
-                  fontSize: '.8em',
-                  color: theme.colors.gray[5],
-                })}
-              >
+            <Grid.Col span={6} className={classes.infoSectionItem}>
+              <Container className={classes.infoSectionItemName}>
                 {`${field.fieldName}: `}
               </Container>
-              <Container
-                sx={(theme) => ({
-                  fontSize: '1.5em',
-                  fontWeight: 'bold',
-                  color: theme.colors.gray[7],
-                  textAlign: 'left',
-                })}
-              >
+              <Container className={classes.infoSectionItemValue}>
                 {`${field.value}`}
               </Container>
             </Grid.Col>
@@ -80,7 +67,6 @@ const HistoryElement: FC<IHistoryElementProps> = ({
         slideSize="0%"
         slideGap="md"
         withIndicators
-        // draggable={false}
         mx="auto"
         containScroll="trimSnaps"
         w="400px"
@@ -92,9 +78,7 @@ const HistoryElement: FC<IHistoryElementProps> = ({
             },
           },
         }}
-        sx={{
-          margin: '1em',
-        }}
+        className={classes.productsList}
       >
         {products
           .map((product) => (
@@ -111,14 +95,7 @@ const HistoryElement: FC<IHistoryElementProps> = ({
           ))}
       </Carousel>
       {!products.length && (
-      <Center
-        style={{
-          margin: '1em',
-          fontSize: '1.5em',
-          color: '#b9b9b9',
-          fontWeight: 'bold',
-        }}
-      >
+      <Center className={classes.notExistsMsg}>
         There no products in the cart
       </Center>
       )}

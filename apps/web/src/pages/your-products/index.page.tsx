@@ -9,7 +9,7 @@ import {
   Stack,
   TextInput,
   LoadingOverlay,
-  Space, Pagination,
+  Pagination,
 } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
@@ -20,12 +20,12 @@ import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { FileWithPath } from '@mantine/dropzone';
 import { PaginationState } from '@tanstack/react-table';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import { handleError } from '../../utils';
-import { productApi } from '../../resources/product';
-import { accountApi } from '../../resources/account';
+import ProductCard from 'components/ProductCard/ProductCard';
+import { handleError } from 'utils';
+import { productApi, productTypes } from 'resources/product';
+import { accountApi } from 'resources/account';
 import ImagePicker from './components/ImagePicker';
-import { ProductsListParams } from '../../types';
+import { useStyles } from './styles';
 
 const schema = z.object({
   name: z.string().min(1).max(36, 'Name can not contain more then 36 symbols.'),
@@ -63,12 +63,12 @@ const YourProducts: NextPage = () => {
     register('imageUrl');
   }, [register]);
 
-  const [params, setParams] = useState<ProductsListParams>({});
+  const [params, setParams] = useState<productTypes.ProductsListParams>({});
 
   const {
     data: productListResp,
     isLoading: isProductListLoading,
-  } = productApi.useList<ProductsListParams>(params);
+  } = productApi.useList<productTypes.ProductsListParams>(params);
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 1,
@@ -191,6 +191,8 @@ const YourProducts: NextPage = () => {
     else resetField('imageUrl', { keepError: false });
   };
 
+  const { classes } = useStyles();
+
   return (
     <>
       <Flex
@@ -219,26 +221,18 @@ const YourProducts: NextPage = () => {
         ))}
         {(!productListResp || !productListResp?.items.length)
             && (
-            <Center style={{
-              margin: '1em',
-              fontSize: '1.5em',
-              color: '#b9b9b9',
-              fontWeight: 'bold',
-            }}
-            >
+            <Center className={classes.notExistsMsg}>
               You have no own products yet
             </Center>
             )}
       </Flex>
-      <Space h="xl" />
-      <Center>{renderPagination()}</Center>
-      <Center style={{ marginTop: '2em' }}>
+      <Center className={classes.paginationSection}>{renderPagination()}</Center>
+      <Center className={classes.addNewProductBtn}>
         <Button onClick={openModal}>
           <IconPlus />
           Add new product
         </Button>
       </Center>
-      <Space h="xl" />
       <Modal
         opened={isModalOpen}
         onClose={() => {
