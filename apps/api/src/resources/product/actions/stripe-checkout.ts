@@ -52,10 +52,17 @@ async function handler(ctx: AppKoaContext<ValidatedData, Request>) {
   const { user } = ctx.state;
   const { product, cart } = ctx.validatedData;
 
+  if (product) await cartService.updateOne(
+    { _id: cart._id },
+    ({ productIds: prevProdIds } ) => ({
+      productIds: prevProdIds.concat([product._id]),
+    }),
+  );
+
   const cartProducts = await productService
     .find({ _id: { $in: cart.productIds } })
     .then(res => res.results);
-  const products = uniqBy(product ? cartProducts.concat(product) : cartProducts, '_id');
+  const products = uniqBy(cartProducts, '_id');
 
   const stripeSession = await stripeService.checkout.sessions.create({
     customer: user.stripe.customerId,
