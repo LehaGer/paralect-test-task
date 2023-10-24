@@ -10,7 +10,7 @@ import HistoryPagination from './components/HistoryPagination';
 
 const History: NextPage = () => {
   const [params, setParams] = useState<IHistoryListParams>({
-    perPage: 10,
+    perPage: 9,
   });
 
   const {

@@ -95,7 +95,7 @@ const Marketplace: NextPage = () => {
   useLayoutEffect(() => {
     setParams((prev) => ({
       ...prev,
-      perPage: 4,
+      perPage: 8,
       filter: {
         ...prev.filter,
         name: debouncedFilterByName,
