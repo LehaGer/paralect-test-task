@@ -2,16 +2,15 @@ import { z } from 'zod';
 
 import { AppKoaContext, AppRouter, Next } from 'types';
 import { validateMiddleware } from 'middlewares';
-import { Product, productService } from 'resources/product';
-import stripeService from '../../../services/stripe/stripe.service';
-import config from '../../../config';
-import { Cart, cartService } from '../../cart';
-import { uniqBy } from 'lodash';
+import { productService } from 'resources/product';
+import stripeService from 'services/stripe/stripe.service';
+import config from 'config';
+import { Cart, cartService } from 'resources/cart';
+import { uniq } from 'lodash';
 
 const schema = z.object({});
 
 interface ValidatedData extends z.infer<typeof schema> {
-  product?: Product;
   cart: Cart;
 }
 type Request = {
@@ -27,13 +26,11 @@ async function validator(ctx: AppKoaContext<ValidatedData, Request>, next: Next)
 
   if (productId) {
 
-    const product = await productService.findOne({ _id: productId });
+    const isProductExists = await productService.exists({ _id: productId });
 
-    ctx.assertClientError(!!product, {
+    ctx.assertClientError(isProductExists, {
       product: 'Product with provided id is not exists',
     }, 404);
-
-    ctx.validatedData.product = product;
 
   }
 
@@ -50,19 +47,22 @@ async function validator(ctx: AppKoaContext<ValidatedData, Request>, next: Next)
 
 async function handler(ctx: AppKoaContext<ValidatedData, Request>) {
   const { user } = ctx.state;
-  const { product, cart } = ctx.validatedData;
+  const { cart } = ctx.validatedData;
+  const { productId } = ctx.request.params;
 
-  if (product) await cartService.updateOne(
+  let productIds: string[] = cart.productIds;
+
+  if (productId) await cartService.updateOne(
     { _id: cart._id },
-    ({ productIds: prevProdIds } ) => ({
-      productIds: prevProdIds.concat([product._id]),
-    }),
+    ({ productIds: prevProdIds }) => {
+      productIds = uniq(prevProdIds.concat([productId]));
+      return ({ productIds: productIds });
+    },
   );
 
-  const cartProducts = await productService
-    .find({ _id: { $in: cart.productIds } })
+  const products = await productService
+    .find({ _id: { $in: productIds } })
     .then(res => res.results);
-  const products = uniqBy(cartProducts, '_id');
 
   const stripeSession = await stripeService.checkout.sessions.create({
     customer: user.stripe.customerId,
