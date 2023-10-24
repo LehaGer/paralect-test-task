@@ -17,11 +17,9 @@ import React, {
   ChangeEvent,
   useCallback,
   useLayoutEffect,
-  useMemo,
   useState,
 } from 'react';
 import isNumber from 'lodash/isNumber';
-import { PaginationState } from '@tanstack/react-table';
 import ProductCard from 'components/ProductCard/ProductCard';
 import { productApi, productTypes } from 'resources/product';
 import { cartApi, cartTypes } from 'resources/cart';
@@ -45,48 +43,30 @@ const Marketplace: NextPage = () => {
     isLoading: isProductListLoading,
   } = productApi.useList<productTypes.ProductsListParams>(params);
 
-  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
-    pageIndex: 1,
-    pageSize: 8,
-  });
+  const [pageIndex, setPageIndex] = useState<number>(1);
 
-  const pagination = useMemo(
-    () => ({
-      pageIndex,
-      pageSize,
-    }),
-    [pageIndex, pageSize],
-  );
+  const onPageChangeHandler = (currentPage: any) => {
+    setPageIndex(currentPage);
+    setParams((prev) => ({
+      ...prev,
+      page: currentPage,
+    }));
+  };
 
-  const onPageChangeHandler = useCallback(
-    (currentPage: any) => {
-      setPagination({ pageIndex: currentPage, pageSize });
-      setParams((prev) => ({
-        ...prev,
-        page: currentPage,
-      }));
-    },
-    [pageSize],
-  );
-
-  const renderPagination = useCallback(() => {
-    const { totalPages } = productListResp || {
-      totalPages: 1,
-    };
-
-    const { pageIndex: memoizedPageIndex } = pagination;
+  const renderPagination = () => {
+    const totalPages = productListResp?.totalPages || 1;
 
     if (totalPages <= 1) return;
 
     return (
       <Pagination
         total={totalPages}
-        value={memoizedPageIndex}
+        value={pageIndex}
         onChange={onPageChangeHandler}
         color="black"
       />
     );
-  }, [onPageChangeHandler, productListResp, pagination]);
+  };
 
   const [filterByName, setFilterByName] = useState('');
   const [filterByPriceFrom, setFilterByPriceFrom] = useState<number>();
@@ -115,7 +95,7 @@ const Marketplace: NextPage = () => {
   useLayoutEffect(() => {
     setParams((prev) => ({
       ...prev,
-      perPage: 8,
+      perPage: 4,
       filter: {
         ...prev.filter,
         name: debouncedFilterByName,
@@ -130,10 +110,7 @@ const Marketplace: NextPage = () => {
       },
       page: 1,
     }));
-    setPagination((prev) => ({
-      ...prev,
-      pageIndex: 1,
-    }));
+    setPageIndex(1);
   }, [
     debouncedFilterByName,
     debouncedFilterByPriceFrom,
@@ -284,6 +261,7 @@ const Marketplace: NextPage = () => {
               visible={isProductListLoading}
               width="auto"
               height={42}
+              className={classes.paginationSection}
             >
               <Center>{renderPagination()}</Center>
             </Skeleton>

@@ -17,13 +17,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import omit from 'lodash/omit';
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileWithPath } from '@mantine/dropzone';
-import { PaginationState } from '@tanstack/react-table';
 import ProductCard from 'components/ProductCard/ProductCard';
 import { handleError } from 'utils';
 import { productApi, productTypes } from 'resources/product';
-import { accountApi } from 'resources/account';
 import ImagePicker from './components/ImagePicker';
 import { useStyles } from './styles';
 
@@ -41,8 +39,6 @@ const YourProducts: NextPage = () => {
     open: openProductFormLoader,
     close: closeProductFormLoader,
   }] = useDisclosure(false);
-
-  const { data: account } = accountApi.useGet();
 
   const [imageFile, setImageFile] = useState<FileWithPath>();
 
@@ -70,75 +66,34 @@ const YourProducts: NextPage = () => {
     isLoading: isProductListLoading,
   } = productApi.useList<productTypes.ProductsListParams>(params);
 
-  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
-    pageIndex: 1,
-    pageSize: 10,
-  });
+  const [pageIndex, setPageIndex] = useState<number>(1);
 
-  const pagination = useMemo(
-    () => ({
-      pageIndex,
-      pageSize,
-    }),
-    [pageIndex, pageSize],
-  );
+  const onPageChangeHandler = (currentPage: any) => {
+    setPageIndex(currentPage);
+    setParams((prev) => ({
+      ...prev,
+      page: currentPage,
+    }));
+  };
 
-  const onPageChangeHandler = useCallback(
-    (currentPage: any) => {
-      setPagination({ pageIndex: currentPage, pageSize });
-      setParams((prev) => ({
-        ...prev,
-        page: currentPage,
-      }));
-    },
-    [pageSize],
-  );
-
-  const renderPagination = useCallback(() => {
-    const { totalPages } = productListResp || {
-      totalPages: 1,
-    };
-
-    const { pageIndex: memoizedPageIndex } = pagination;
+  const renderPagination = () => {
+    const totalPages = productListResp?.totalPages ?? 1;
 
     if (totalPages === 1) return;
 
     return (
       <Pagination
         total={totalPages}
-        value={memoizedPageIndex}
+        value={pageIndex}
         onChange={onPageChangeHandler}
         color="black"
       />
     );
-  }, [onPageChangeHandler, productListResp, pagination]);
+  };
 
-  useLayoutEffect(() => {
-    setParams((prev) => ({
-      ...prev,
-      perPage: 10,
-      filter: {
-        ...prev.filter,
-        ownerId: account?._id,
-        price: {
-          ...prev.filter?.price,
-        },
-      },
-      page: 1,
-    }));
-    setPagination((prev) => ({
-      ...prev,
-      pageIndex: 1,
-    }));
-  }, [account]);
+  const { mutate: uploadImage } = productApi.useUploadImage();
 
-  const {
-    mutate: uploadImage,
-  } = productApi.useUploadImage();
-
-  const {
-    mutate: createProduct,
-  } = productApi.useCreateProduct<CreateNewProductParams>();
+  const { mutate: createProduct } = productApi.useCreateProduct<CreateNewProductParams>();
 
   const { mutate: removeCard } = productApi.useRemove();
 

@@ -13,4 +13,8 @@ export const useStyles = createStyles((theme: MantineTheme) => ({
     color: theme.colors.gray[4],
     fontWeight: 'bold',
   },
+  paginationSection: {
+    marginTop: '2em',
+    marginBottom: '2em',
+  },
 }));

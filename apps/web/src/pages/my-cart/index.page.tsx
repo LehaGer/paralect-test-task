@@ -1,6 +1,14 @@
 import { NextPage } from 'next';
-import { Button, Center, Flex, Loader, Space, Stack } from '@mantine/core';
-import React, { useEffect } from 'react';
+import {
+  Button,
+  Center,
+  Flex,
+  Loader,
+  Pagination,
+  Space,
+  Stack,
+} from '@mantine/core';
+import React, { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import ProductCard from 'components/ProductCard/ProductCard';
 import { productApi, productTypes } from 'resources/product';
@@ -9,10 +17,39 @@ import config from 'config';
 import { useStyles } from './styles';
 
 const MyCart: NextPage = () => {
+  const [params, setParams] = useState<productTypes.ProductsListParams>(
+    { filter: { isInCard: true } },
+  );
+
   const {
     data: productListResp,
     isLoading: isProductListLoading,
-  } = productApi.useList<productTypes.ProductsListParams>({ filter: { isInCard: true } });
+  } = productApi.useList<productTypes.ProductsListParams>(params);
+
+  const [pageIndex, setPageIndex] = useState<number>(1);
+
+  const onPageChangeHandler = (currentPage: any) => {
+    setPageIndex(currentPage);
+    setParams((prev) => ({
+      ...prev,
+      page: currentPage,
+    }));
+  };
+
+  const renderPagination = () => {
+    const totalPages = productListResp?.totalPages || 1;
+
+    if (totalPages <= 1) return;
+
+    return (
+      <Pagination
+        total={totalPages}
+        value={pageIndex}
+        onChange={onPageChangeHandler}
+        color="black"
+      />
+    );
+  };
 
   const { mutate: removeFromCart } = cartApi.useRemoveProduct<cartTypes.RemoveProductParams>();
 
@@ -75,6 +112,7 @@ const MyCart: NextPage = () => {
           </form>
         </Center>
       )}
+      <Center>{renderPagination()}</Center>
       <Space h="xl" />
     </Stack>
   );

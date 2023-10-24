@@ -1,14 +1,15 @@
 import { NextPage } from 'next';
-import { Center, Flex, Loader, Space, Stack } from '@mantine/core';
+import { Center, Flex, Loader, Stack } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { cartApi } from 'resources/cart';
 import { IHistoryListParams } from 'resources/cart/cart.types';
 import { notifications } from '@mantine/notifications';
 import HistoryElement from './components/HistoryElement';
 import { useStyles } from './styles';
+import HistoryPagination from './components/HistoryPagination';
 
 const History: NextPage = () => {
-  const [params] = useState<IHistoryListParams>({
+  const [params, setParams] = useState<IHistoryListParams>({
     perPage: 10,
   });
 
@@ -59,7 +60,9 @@ const History: NextPage = () => {
           <HistoryElement {...item} />
         ))}
       </Flex>
-      <Space h="xl" />
+      <Center className={classes.paginationSection}>
+        <HistoryPagination setParams={setParams} historyListResp={historyListResp} />
+      </Center>
     </Stack>
   );
 };
