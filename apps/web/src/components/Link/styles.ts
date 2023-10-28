@@ -4,7 +4,6 @@ const styles = (
   { colors }: MantineTheme,
   disabled?: boolean,
 ): CSSObject => ({
-  color: disabled ? colors.gray[2] : colors.gray[6],
   display: 'flex',
   gap: '5px',
   pointerEvents: disabled ? 'none' : 'initial',

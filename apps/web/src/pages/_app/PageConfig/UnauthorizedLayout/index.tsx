@@ -20,6 +20,7 @@ const UnauthorizedLayout: FC<UnauthorizedLayoutProps> = ({ children }) => {
       breakpoints={[
         { maxWidth: 'sm', cols: 1, spacing: 'sm' },
       ]}
+      className={classes.body}
     >
 
       <div className={classes.wrapper}>
@@ -34,9 +35,9 @@ const UnauthorizedLayout: FC<UnauthorizedLayoutProps> = ({ children }) => {
       >
         <Image
           alt="app info"
-          src="../images/intro.svg"
+          src="../images/intro.png"
           height="95vh"
-          fit="initial"
+          fit="contain"
           sx={{
             margin: 'auto 0em',
             overflow: 'hidden',

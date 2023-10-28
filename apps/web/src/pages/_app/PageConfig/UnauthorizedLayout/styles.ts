@@ -19,4 +19,7 @@ export const useStyles = createStyles(() => ({
     display: 'flex',
     alignItems: 'center',
   },
+  body: {
+    backgroundColor: 'var(--mantine-color-gray-0)',
+  },
 }));

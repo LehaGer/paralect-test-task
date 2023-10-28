@@ -24,6 +24,7 @@ import { Link } from 'components';
 import { accountApi, accountConstants } from 'resources/account';
 
 import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
+import { useStyles } from './styles';
 
 const schema = z.object({
   email: z
@@ -120,6 +121,8 @@ const SignUp: NextPage = () => {
     onError: (e) => handleError(e, setError),
   });
 
+  const { classes } = useStyles();
+
   if (registered) {
     return (
       <>
@@ -156,39 +159,32 @@ const SignUp: NextPage = () => {
       <Head>
         <title>Sign up</title>
       </Head>
-      <Stack sx={{ width: '408px' }} spacing={20}>
-        <Stack spacing={34}>
-          <Title order={1}>Sign Up</Title>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack spacing={20}>
-              <TextInput
-                {...register('email')}
-                label="Email Address"
-                placeholder="Email Address"
-                error={errors.email?.message}
-              />
-              <PasswordInput
-                {...register('password')}
-                label="Password"
-                placeholder="Enter password"
-                error={errors.password?.message}
-              />
-              <SimpleGrid cols={1} spacing="xs" p={5}>
-                {passwordRulesData.map((ruleData) => (
-                  <RulePoint ruleData={ruleData} />
-                ))}
-              </SimpleGrid>
-            </Stack>
-            <Button type="submit" loading={isSignUpLoading} fullWidth mt={34}>
-              Create Account
-            </Button>
-          </form>
-        </Stack>
-        <Stack spacing={34}>
-          <Group
-            sx={{ fontSize: '16px', justifyContent: 'center' }}
-            spacing={12}
-          >
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack className={classes.wrapper}>
+          <Title order={1} className={classes.title}>Sign Up</Title>
+          <Stack spacing="1.25rem">
+            <TextInput
+              {...register('email')}
+              label="Email Address"
+              placeholder="Email Address"
+              error={errors.email?.message}
+            />
+            <PasswordInput
+              {...register('password')}
+              label="Password"
+              placeholder="Enter password"
+              error={errors.password?.message}
+            />
+            <SimpleGrid cols={1} spacing=".5rem" p={5}>
+              {passwordRulesData.map((ruleData) => (
+                <RulePoint ruleData={ruleData} />
+              ))}
+            </SimpleGrid>
+          </Stack>
+          <Button type="submit" loading={isSignUpLoading} fullWidth>
+            Create Account
+          </Button>
+          <Group className={classes.additionalOptions}>
             Have an account?
             <Link
               type="router"
@@ -200,7 +196,7 @@ const SignUp: NextPage = () => {
             </Link>
           </Group>
         </Stack>
-      </Stack>
+      </form>
     </>
   );
 };

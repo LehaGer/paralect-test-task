@@ -11,6 +11,12 @@ function getButtonRootStyles(theme: MantineTheme, propsColor?: string, contextVa
     gap: '0.625rem',
     flexShrink: '0',
     borderRadius: '0.5rem',
+    textAlign: 'center',
+    fontFamily: 'Inter',
+    fontSize: '0.875rem',
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: '1.3125rem',
   };
 
   if (!propsColor) {
@@ -53,13 +59,13 @@ function getButtonRootStyles(theme: MantineTheme, propsColor?: string, contextVa
 }
 
 const shipTheme: MantineThemeOverride = {
-  fontFamily: 'Roboto, sans-serif',
+  fontFamily: 'Inter, Roboto, sans-serif',
   fontFamilyMonospace: 'monospace',
   headings: {
-    fontFamily: 'Roboto, sans-serif',
+    fontFamily: 'Inter, Roboto, sans-serif',
     fontWeight: 600,
   },
-  lineHeight: 1.45,
+  lineHeight: '1.5rem',
   primaryColor: 'blue',
   primaryShade: 6,
   other: {
@@ -299,13 +305,6 @@ const shipTheme: MantineThemeOverride = {
     },
     Select: {
       defaultProps: { size: 'md' },
-    },
-    Image: {
-      styles: () => ({
-        image: {
-          objectPosition: 'left !important',
-        },
-      }),
     },
   },
 };
