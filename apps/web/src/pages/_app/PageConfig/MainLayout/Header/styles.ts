@@ -27,15 +27,7 @@ export const useStyles = createStyles((theme: MantineTheme) => ({
     justifyContent: 'space-between',
     backgroundColor: theme.colors.gray[0],
   },
-  mainLogoWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    color: theme.colors.gray[7],
-    fontSize: '1.5em',
-    fontWeight: 'bold',
-    gap: '10px',
-  },
+
 }));
 
 export default { styles, useStyles };
