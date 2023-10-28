@@ -34,9 +34,10 @@ const UnauthorizedLayout: FC<UnauthorizedLayoutProps> = ({ children }) => {
       >
         <Image
           alt="app info"
-          src="../images/intro.png"
+          src="../images/intro.svg"
           height="95vh"
-          style={{
+          fit="initial"
+          sx={{
             margin: 'auto 0em',
             overflow: 'hidden',
             width: '90%',

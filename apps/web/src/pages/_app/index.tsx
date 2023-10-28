@@ -21,6 +21,7 @@ const App: FC<AppProps> = ({ Component, pageProps }) => (
     <QueryClientProvider client={queryClient}>
       <MantineProvider
         theme={shipTheme}
+        withCSSVariables
         withGlobalStyles
         withNormalizeCSS
       >

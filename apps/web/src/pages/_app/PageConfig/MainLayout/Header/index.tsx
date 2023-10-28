@@ -3,51 +3,26 @@ import { RoutePath } from 'routes';
 import {
   Header as LayoutHeader,
   Container,
-  Group, Badge,
+  Group,
 } from '@mantine/core';
 import { Link } from 'components';
 import { LogoImage } from 'public/images';
 
 import { accountApi } from 'resources/account';
 
-import { usePathname } from 'next/navigation';
 import UserMenu from './components/UserMenu';
 import ShadowLoginBanner from './components/ShadowLoginBanner';
 import MyCartBanner from './components/MyCartBanner';
 
-import { styles, useStyles } from './styles';
-
-const links = [
-  { link: RoutePath.Marketplace, label: 'Marketplace' },
-  { link: RoutePath.YourProducts, label: 'Your Products' },
-];
+import { useStyles } from './styles';
+import Shell from './components/Shell';
 
 const Header: FC = () => {
   const { data: account } = accountApi.useGet();
-  const pathname = usePathname();
 
   const { classes } = useStyles();
 
   if (!account) return null;
-
-  const items = links.map((link) => {
-    const isActive = pathname === link.link;
-    return (
-      <Link
-        key={link.label}
-        href={link.link}
-        type="router"
-        underline={false}
-      >
-        <Badge
-          sx={(theme) => styles(theme, isActive)}
-          size="lg"
-        >
-          {link.label}
-        </Badge>
-      </Link>
-    );
-  });
 
   return (
     <LayoutHeader height="72px">
@@ -63,7 +38,7 @@ const Header: FC = () => {
           </Container>
         </Link>
         <Group h="100%">
-          {items}
+          <Shell />
         </Group>
         <Group h="100%" spacing="xl">
           <MyCartBanner />

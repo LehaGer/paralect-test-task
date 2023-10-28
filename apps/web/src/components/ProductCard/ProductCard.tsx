@@ -70,11 +70,11 @@ const ProductCard: FC<IProductCard> = ({
           <form action={`${config.API_URL}/products/checkout/${_id}`} method="POST" style={{ width: '100%' }}>
             <Group grow spacing="xs">
               {isInCart ? (
-                <Button className={classes.button} variant="light" color="gray" size="sm" onClick={removeFromCart}>
+                <Button className={classes.button} variant="outline" size="sm" onClick={removeFromCart}>
                   Uncart
                 </Button>
               ) : (
-                <Button className={classes.button} variant="outline" color="gray" size="sm" onClick={addToCart}>
+                <Button className={classes.button} variant="outline" size="sm" onClick={addToCart}>
                   Add to cart
                 </Button>
               )}

@@ -4,7 +4,6 @@ export const globalStyles = (theme: MantineTheme): CSSObject => ({
   '*, *::before, *::after': {
     boxSizing: 'border-box',
   },
-
   body: {
     ...theme.fn.fontStyles(),
   },
