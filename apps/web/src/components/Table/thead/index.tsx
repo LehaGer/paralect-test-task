@@ -29,19 +29,31 @@ const Thead: FC<TheadProps> = ({ isSortable, headerGroups, flexRender }) => (
             key={header.id}
             colSpan={header.colSpan}
             style={{
-              width: header.id === 'select' ? '24px' : 'auto',
+              width: header.id === 'select'
+              || header.id === '_id'
+              || header.id === 'paymentIntentTime'
+                ? '24px'
+                : 'auto',
+              borderBottom: '0',
             }}
           >
+
             {!header.isPlaceholder && (
               <UnstyledButton
                 onClick={header.column.getToggleSortingHandler()}
                 style={{
                   width: '100%',
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  lineHeight: '16px',
-                  fontWeight: '600',
-                  fontSize: '14px',
+                  justifyContent:
+                    header.id !== 'price'
+                    && header.id !== 'paymentIntentTime'
+                      ? 'space-between'
+                      : 'flex-end',
+                  color: 'var(--mantine-color-dark-2, #767676)',
+                  fontSize: '1rem',
+                  fontStyle: 'normal',
+                  fontWeight: '400',
+                  lineHeight: '1.25rem',
                 }}
               >
                 {

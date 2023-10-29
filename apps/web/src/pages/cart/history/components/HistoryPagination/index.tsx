@@ -1,6 +1,6 @@
 import React, { FC, Dispatch, SetStateAction, useRef, useState, useEffect } from 'react';
-import { cartTypes } from 'resources/cart';
 import { Pagination } from '@mantine/core';
+import { cartTypes } from '../../../../../resources/cart';
 
 interface IHistoryPaginationProps {
   setParams: Dispatch<SetStateAction<cartTypes.IHistoryListParams>>;

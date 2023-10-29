@@ -60,6 +60,6 @@ export const useStyles = createStyles(({ colors }: MantineTheme) => ({
   },
   paginationSection: {
     marginTop: '1.94rem',
-    marginBottom: '2rem',
+    marginBottom: '1rem',
   },
 }));

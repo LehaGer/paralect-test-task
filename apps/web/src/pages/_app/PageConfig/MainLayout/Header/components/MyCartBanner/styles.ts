@@ -11,4 +11,9 @@ export const useStyles = createStyles(() => ({
     height: '2.01869rem',
     'flex-shrink': 0,
   },
+  active: {
+    '& > *': {
+      fill: 'var(--mantine-color-blue-6)',
+    },
+  },
 }));

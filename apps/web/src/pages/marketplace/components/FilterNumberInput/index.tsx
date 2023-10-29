@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import { FC, ReactElement } from 'react';
 import { NumberInput } from '@mantine/core';
 
 interface IFilterNumberInput {
@@ -6,7 +6,7 @@ interface IFilterNumberInput {
   setState: (val: number | '') => void,
   minVal: number,
   maxVal?: number,
-  icon: string | React.ReactElement,
+  icon: string | ReactElement,
   iconWidth?: number | string,
   className?: string;
 }
@@ -27,7 +27,7 @@ const FilterNumberInput: FC<IFilterNumberInput> = ({
     min={minVal}
     max={maxVal}
     hideControls
-    parser={(value) => {
+    parser={(value: string) => {
       const valueWithoutCurrency = value.replace(/\$\s?|(,*)/g, '');
       const slicedValue = `${state}` === valueWithoutCurrency
         ? valueWithoutCurrency.slice(0, valueWithoutCurrency.length - 1)
@@ -37,7 +37,7 @@ const FilterNumberInput: FC<IFilterNumberInput> = ({
 
       return valueWithoutSymbols;
     }}
-    formatter={(value) => (!Number.isNaN(parseFloat(value)) ? `${value}$` : '')}
+    formatter={(value: string) => (!Number.isNaN(parseFloat(value)) ? `${value}$` : '')}
     className={className}
   />
 );

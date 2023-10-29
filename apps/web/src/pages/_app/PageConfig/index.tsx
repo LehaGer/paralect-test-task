@@ -50,6 +50,11 @@ const PageConfig: FC<PageConfigProps> = ({ children }) => {
     return null;
   }
 
+  if (route === RoutePath.Cart) {
+    push(RoutePath.MyCart);
+    return null;
+  }
+
   if (scope === ScopeType.PUBLIC && account) {
     push(RoutePath.Marketplace);
     return null;

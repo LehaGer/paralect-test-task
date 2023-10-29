@@ -19,7 +19,7 @@ const MainLayout: FC<MainLayoutProps> = ({ children }) => (
         backgroundColor: theme.colors.gray[0],
       },
       main: {
-        padding: '32px',
+        padding: '32px 32px 1rem 32px',
         paddingTop: '5.5rem',
         '& > *': {
           marginTop: 0,

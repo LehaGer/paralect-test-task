@@ -129,7 +129,13 @@ const Marketplace: NextPage = () => {
 
   return (
     <Container my="md" className={classes.pageRoot}>
-      <Grid gutter="xl">
+      <Grid sx={{
+        gap: '1.75rem',
+        '& > *': {
+          padding: 0,
+        },
+      }}
+      >
         <Grid.Col span="content">
           <Filter
             filterByPriceFrom={filterByPriceFrom}

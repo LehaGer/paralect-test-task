@@ -2,8 +2,8 @@ import React, { FC } from 'react';
 import { Center, Container, Grid, Paper } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import { isNil } from 'lodash';
-import { cartTypes } from 'resources/cart';
-import ProductCard from 'components/ProductCard/ProductCard';
+import { cartTypes } from '../../../../../resources/cart';
+import ProductCard from '../../../../../components/ProductCard/ProductCard';
 import { useStyles } from './styles';
 
 type IHistoryElementProps = cartTypes.HistoryItemResponse;
