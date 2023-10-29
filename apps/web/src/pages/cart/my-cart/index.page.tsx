@@ -1,7 +1,7 @@
 import { NextPage } from 'next';
 import {
   Button,
-  Center,
+  Center, Container,
   Grid,
   Loader,
 } from '@mantine/core';
@@ -49,7 +49,6 @@ const MyCart: NextPage = () => {
               <Loader color="blue" />
             </Center>
           )}
-          <MyCartTable items={productListResp?.items ?? []} />
           {!isProductListLoading && !productListResp?.items.length && (
             <Center className={classes.notExistsMsg}>
               <NoItemsMessage
@@ -65,14 +64,14 @@ const MyCart: NextPage = () => {
               />
             </Center>
           )}
+          {!isProductListLoading && !!productListResp?.items.length && (
+            <Container className={classes.tableContainer}>
+              <MyCartTable items={productListResp?.items ?? []} />
+            </Container>
+          )}
         </Grid.Col>
-        <Grid.Col
-          span="content"
-          sx={{
-            marginLeft: '4.88rem',
-          }}
-        >
-          {!isProductListLoading && productListResp?.items.length && (
+        <Grid.Col span="content">
+          {!isProductListLoading && !!productListResp?.items.length && (
           <Summary
             totalValue={
               productListResp?.items.reduce((acc, { price }) => acc + price, 0)

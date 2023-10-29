@@ -1,5 +1,5 @@
 import { NextPage } from 'next';
-import { Center, Flex, Loader, Stack } from '@mantine/core';
+import { Center, Container, Flex, Loader, Stack } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { notifications } from '@mantine/notifications';
 import { cartApi } from '../../../resources/cart';
@@ -43,7 +43,6 @@ const History: NextPage = () => {
           align="center"
           direction="row"
           wrap="wrap"
-          w="75%"
         >
           {isHistoryLoading && (
             <Center>
@@ -55,7 +54,11 @@ const History: NextPage = () => {
               There no carts in history yet
             </Center>
           )}
-          <HistoryTable stripeSessionList={historyList ?? []} />
+          {!isHistoryLoading && !!historyList?.length && (
+            <Container className={classes.tableContainer}>
+              <HistoryTable stripeSessionList={historyList ?? []} />
+            </Container>
+          )}
         </Flex>
       </Stack>
     </Cart>

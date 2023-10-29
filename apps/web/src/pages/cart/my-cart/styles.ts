@@ -8,4 +8,10 @@ export const useStyles = createStyles(() => ({
     fontWeight: 'bold',
   },
   notExistsMsg: {},
+  tableContainer: {
+    maxWidth: 'calc(100% - 4.87rem)',
+    width: '100%',
+    margin: '0 auto 0 0',
+    padding: '0',
+  },
 }));

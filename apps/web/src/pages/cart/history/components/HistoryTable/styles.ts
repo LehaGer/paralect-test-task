@@ -10,5 +10,9 @@ export const useStyles = createStyles(() => ({
     'font-weight': '400',
     'line-height': '1.25rem',
   },
-  date: {},
+  date: {
+    justifyContent: 'flex-end',
+    padding: 0,
+    margin: 0,
+  },
 }));

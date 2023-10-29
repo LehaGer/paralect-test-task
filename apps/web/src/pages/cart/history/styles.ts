@@ -17,4 +17,10 @@ export const useStyles = createStyles((theme: MantineTheme) => ({
     marginTop: '2em',
     marginBottom: '2em',
   },
+  tableContainer: {
+    maxWidth: 'calc(100% - 24.5575rem)',
+    width: '100%',
+    margin: '0 auto 0 0',
+    padding: '0',
+  },
 }));

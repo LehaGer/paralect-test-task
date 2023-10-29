@@ -29,7 +29,7 @@ async function handler(ctx: AppKoaContext<ValidatedData>) {
     () => ({ productIds: [] }),
   );
 
-  ctx.response.redirect(`${config.WEB_URL}/history?success=true`);
+  ctx.response.redirect(`${config.WEB_URL}/payment-successful`);
 }
 
 export default (router: AppRouter) => {
