@@ -48,7 +48,7 @@ const HistoryElement: FC<IHistoryElementProps> = ({
     >
       <Grid
         grow
-        className={classes.infoSection}
+        className={classes.priceSection}
       >
         {fieldDataSet
           .filter((el) => !isNil(el.value))
@@ -85,7 +85,6 @@ const HistoryElement: FC<IHistoryElementProps> = ({
             <Carousel.Slide>
               <ProductCard
                 key={product.id}
-                _id={product.id}
                 price={product.price}
                 name={product.name}
                 imageUrl={product.imageUrl ?? ''}

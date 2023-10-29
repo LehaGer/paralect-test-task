@@ -1,7 +1,7 @@
 import { createStyles, MantineTheme } from '@mantine/core';
 
 export const useStyles = createStyles((theme: MantineTheme) => ({
-  infoSection: {
+  priceSection: {
     margin: '1em',
     marginBottom: '3em',
     width: '25em',

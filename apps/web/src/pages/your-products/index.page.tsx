@@ -165,7 +165,6 @@ const YourProducts: NextPage = () => {
             )}
         {productListResp?.items.map((product) => (
           <ProductCard
-            _id={product._id}
             isOwn
             price={product.price}
             name={product.name}

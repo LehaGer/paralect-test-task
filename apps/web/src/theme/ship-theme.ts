@@ -1,23 +1,30 @@
 import { MantineTheme, MantineThemeOverride } from '@mantine/core';
 
-function getButtonRootStyles(theme: MantineTheme, propsColor?: string, contextVariant?: string) {
+function getButtonRootStyles(
+  theme: MantineTheme,
+  propsColor?: string,
+  compact?: string,
+  contextVariant?: string,
+) {
   let colorsParams: Record<string, any> = {};
-  const commonParams: Record<string, any> = {
-    display: 'inline-flex',
-    height: '2.5rem',
-    padding: '0.25rem 1.25rem',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '0.625rem',
-    flexShrink: '0',
-    borderRadius: '0.5rem',
-    textAlign: 'center',
-    fontFamily: 'Inter',
-    fontSize: '0.875rem',
-    fontStyle: 'normal',
-    fontWeight: 500,
-    lineHeight: '1.3125rem',
-  };
+  const commonParams: Record<string, any> = !compact
+    ? {
+      display: 'inline-flex',
+      height: '2.5rem',
+      padding: '0.25rem 1.25rem',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '0.625rem',
+      flexShrink: '0',
+      borderRadius: '0.5rem',
+      textAlign: 'center',
+      fontFamily: 'Inter',
+      fontSize: '0.875rem',
+      fontStyle: 'normal',
+      fontWeight: 500,
+      lineHeight: '1.3125rem',
+    }
+    : {};
 
   if (!propsColor) {
     if (contextVariant === 'filled') {
@@ -91,8 +98,12 @@ const shipTheme: MantineThemeOverride = {
   components: {
     Button: {
       defaultProps: { size: 'lg' },
-      styles: (theme, { color: propsColor }, { variant: contextVariant }) => ({
-        root: getButtonRootStyles(theme, propsColor, contextVariant),
+      styles: (
+        theme,
+        { color: propsColor, compact },
+        { variant: contextVariant },
+      ) => ({
+        root: getButtonRootStyles(theme, propsColor, compact, contextVariant),
         label: {
           fontWeight: 500,
         },

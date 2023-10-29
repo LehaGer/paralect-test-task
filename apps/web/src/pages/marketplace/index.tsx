@@ -11,7 +11,12 @@ import {
   TextInput,
   UnstyledButton,
 } from '@mantine/core';
-import { IconArrowsDownUp, IconSearch, IconX, IconChevronDown } from '@tabler/icons-react';
+import {
+  IconArrowsDownUp,
+  IconX,
+  IconChevronDown,
+  IconArrowsUpDown,
+} from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
 import React, {
   ChangeEvent,
@@ -23,6 +28,7 @@ import isNumber from 'lodash/isNumber';
 import ProductCard from 'components/ProductCard/ProductCard';
 import { productApi, productTypes } from 'resources/product';
 import { cartApi, cartTypes } from 'resources/cart';
+import { SearchImage } from 'public/images';
 import ResetFilerButton from './components/ResetFlterButton';
 import Filter from './components/Filter';
 import { useStyles } from './styles';
@@ -122,10 +128,7 @@ const Marketplace: NextPage = () => {
   const { classes } = useStyles();
 
   return (
-    <Container
-      my="md"
-      className={classes.pageRoot}
-    >
+    <Container my="md" className={classes.pageRoot}>
       <Grid gutter="xl">
         <Grid.Col span="content">
           <Filter
@@ -136,90 +139,124 @@ const Marketplace: NextPage = () => {
           />
         </Grid.Col>
         <Grid.Col span="auto">
-          <Stack>
+          <Stack className={classes.mainInfoWrapper}>
             <TextInput
               size="md"
               value={filterByName}
               onChange={handleFilterByName}
               placeholder="Type to search..."
               radius="md"
-              icon={<IconSearch size={16} />}
+              icon={<SearchImage />}
+              className={classes.searchInput}
               rightSection={
-                  filterByName ? (
-                    <UnstyledButton
-                      onClick={() => setFilterByName('')}
-                      sx={{ display: 'flex', alignItems: 'center' }}
-                    >
-                      <IconX color="gray" />
-                    </UnstyledButton>
-                  ) : null
-                }
-            />
-            <Grid>
-              <Grid.Col span="auto">
-                <Stack align="flex-start">
-                  <Container w="max-content" className={classes.responseSummary}>
-                    {`${productListResp?.count ?? 0} results`}
-                  </Container>
-                  <Flex>
-                    {filterByName && (
-                    <ResetFilerButton
-                      content={filterByName}
-                      filterSkipHandler={() => {
-                        setFilterByName('');
-                      }}
-                    />
-                    )}
-                    {(filterByPriceFrom || filterByPriceTo) && (
-                    <ResetFilerButton
-                      content={`$${filterByPriceFrom ?? 0} - $${filterByPriceTo ?? '∞'}`}
-                      filterSkipHandler={() => {
-                        handleFilterByPriceFrom('');
-                        handleFilterByPriceTo('');
-                      }}
-                    />
-                    )}
-                  </Flex>
-                </Stack>
-              </Grid.Col>
-              <Grid.Col span="content">
-                <Group spacing={0}>
-                  <ActionIcon
-                    radius="xl"
-                    color="gray"
-                    variant="subtle"
-                    size={15}
-                    style={{ margin: 0 }}
-                    onClick={() => {
-                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                    }}
+                filterByName ? (
+                  <UnstyledButton
+                    onClick={() => setFilterByName('')}
+                    sx={{ display: 'flex', alignItems: 'center' }}
                   >
-                    <IconArrowsDownUp size={15} />
-                  </ActionIcon>
+                    <IconX color="gray" />
+                  </UnstyledButton>
+                ) : null
+              }
+            />
+            <Stack className={classes.searchParamsSection}>
+              <Grid>
+                <Grid.Col span="auto">
+                  <Stack align="flex-start">
+                    <Container
+                      w="max-content"
+                      className={classes.responseSummary}
+                    >
+                      {`${productListResp?.count ?? 0} results`}
+                    </Container>
+                  </Stack>
+                </Grid.Col>
+                <Grid.Col span="content">
+                  <Group spacing={0}>
+                    <ActionIcon
+                      radius="xl"
+                      color="gray"
+                      variant="subtle"
+                      size={15}
+                      style={{ margin: 0 }}
+                      onClick={() => {
+                        setSortDirection(
+                          sortDirection === 'asc' ? 'desc' : 'asc',
+                        );
+                      }}
+                    >
+                      {sortDirection === 'asc' ? (
+                        <IconArrowsUpDown size={15} />
+                      ) : (
+                        <IconArrowsDownUp size={15} />
+                      )}
+                    </ActionIcon>
 
-                  <Menu width={200} shadow="md" zIndex={999}>
-                    <Menu.Target>
-                      <Button
-                        compact
-                        variant="subtle"
-                        color="gray"
-                        radius="xl"
-                        rightIcon={(<IconChevronDown size={15} />)}
-                        size="sm"
-                      >
-                        {`Sorted by ${sortBy !== 'createdOn' ? sortBy : 'creation time'}`}
-                      </Button>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item onClick={() => { setSortBy('createdOn'); }}>creation time</Menu.Item>
-                      <Menu.Item onClick={() => { setSortBy('price'); }}>price</Menu.Item>
-                      <Menu.Item onClick={() => { setSortBy('name'); }}>name</Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-
-                </Group>
-              </Grid.Col>
-            </Grid>
+                    <Menu width={200} shadow="md">
+                      <Menu.Target>
+                        <Button
+                          compact
+                          variant="subtle"
+                          color="gray"
+                          radius="xl"
+                          rightIcon={<IconChevronDown size={15} />}
+                          size="sm"
+                          className={classes.sortBySection}
+                        >
+                          {`Sorted by ${
+                            sortBy !== 'createdOn' ? sortBy : 'creation time'
+                          }`}
+                        </Button>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          onClick={() => {
+                            setSortBy('createdOn');
+                          }}
+                        >
+                          creation time
+                        </Menu.Item>
+                        <Menu.Item
+                          onClick={() => {
+                            setSortBy('price');
+                          }}
+                        >
+                          price
+                        </Menu.Item>
+                        <Menu.Item
+                          onClick={() => {
+                            setSortBy('name');
+                          }}
+                        >
+                          name
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </Group>
+                </Grid.Col>
+              </Grid>
+              <Flex>
+                {filterByName && (
+                  <ResetFilerButton
+                    content={filterByName}
+                    filterSkipHandler={() => {
+                      setFilterByName('');
+                    }}
+                  />
+                )}
+                {(filterByPriceFrom || filterByPriceTo) && (
+                  <ResetFilerButton
+                    content={`$${filterByPriceFrom ?? 0} - $${
+                      filterByPriceTo ?? '∞'
+                    }`}
+                    filterSkipHandler={() => {
+                      handleFilterByPriceFrom('');
+                      handleFilterByPriceTo('');
+                    }}
+                  />
+                )}
+              </Flex>
+            </Stack>
             <Skeleton
               radius="md"
               visible={isProductListLoading}
@@ -236,7 +273,6 @@ const Marketplace: NextPage = () => {
                 {productListResp?.items.map((product) => (
                   <ProductCard
                     key={product._id}
-                    _id={product._id}
                     price={product.price}
                     name={product.name}
                     imageUrl={product.imageUrl}
@@ -250,24 +286,24 @@ const Marketplace: NextPage = () => {
                   />
                 ))}
                 {!isProductListLoading && !productListResp?.items.length && (
-                <Center className={classes.productsNotExistsMsg}>
-                  There no products in marketplace yet
-                </Center>
+                  <Center className={classes.productsNotExistsMsg}>
+                    There no products in marketplace yet
+                  </Center>
                 )}
               </Flex>
-            </Skeleton>
-            <Skeleton
-              radius="md"
-              visible={isProductListLoading}
-              width="auto"
-              height={42}
-              className={classes.paginationSection}
-            >
-              <Center>{renderPagination()}</Center>
             </Skeleton>
           </Stack>
         </Grid.Col>
       </Grid>
+      <Skeleton
+        radius="md"
+        visible={isProductListLoading}
+        width="auto"
+        height={42}
+        className={classes.paginationSection}
+      >
+        <Center>{renderPagination()}</Center>
+      </Skeleton>
     </Container>
   );
 };

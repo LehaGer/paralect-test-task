@@ -87,7 +87,6 @@ const MyCart: NextPage = () => {
         {productListResp?.items.map((product) => (
           <ProductCard
             key={product._id}
-            _id={product._id}
             price={product.price}
             name={product.name}
             imageUrl={product.imageUrl}

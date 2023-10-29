@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
-import { Button, Container, Group, NumberInput, Stack } from '@mantine/core';
+import { Button, Container, Group, Stack } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 import { useStyles } from './styles';
+import FilterNumberInput from '../FilterNumberInput';
 
 interface IFilterProps {
   filterByPriceFrom?: number;
@@ -20,47 +21,46 @@ const Filter: FC<IFilterProps> = ({
 
   return (
     <Stack className={classes.componentRoot}>
-      <Group>
+      <Group className={classes.header}>
         <Container className={classes.componentNameSection}>
           Filters
         </Container>
         <Button
           variant="subtle"
           color="gray"
-          radius="xl"
-          size="xs"
           compact
           className={classes.resetAllBtn}
           type="reset"
-          rightIcon={<IconX size={15} spacing={0} style={{ margin: 0 }} />}
+          rightIcon={(<IconX className={classes.resetAllBtnCross} />)}
           onClick={() => {
             setPriceFrom('');
             setPriceTo('');
           }}
         >
-          reset all
+          Reset All
         </Button>
       </Group>
-      <Stack spacing=".5em">
+      <Stack spacing=".5em" className={classes.filterType}>
         <Container className={classes.filterTypeName}>
           Price
         </Container>
-        <Group grow>
-          <NumberInput
-            value={filterByPriceFrom ?? ''}
-            onChange={setPriceFrom}
-            icon={<Container>From</Container>}
-            iconWidth={60}
-            min={0}
-            max={filterByPriceTo ?? Infinity}
+        <Group grow className={classes.filterInputSection}>
+          <FilterNumberInput
+            state={filterByPriceFrom}
+            setState={setPriceFrom}
+            minVal={0}
+            maxVal={filterByPriceTo ?? Infinity}
+            icon={<Container className={classes.filterInputIcon}>From:</Container>}
+            iconWidth={54}
+            className={classes.filterInput}
           />
-          <NumberInput
-            value={filterByPriceTo ?? ''}
-            onChange={setPriceTo}
-            icon={<Container>To</Container>}
-            iconWidth={35}
-            className={classes.priceInput}
-            min={filterByPriceFrom ?? 0}
+          <FilterNumberInput
+            state={filterByPriceTo}
+            setState={setPriceTo}
+            minVal={filterByPriceFrom ?? 0}
+            icon={<Container className={classes.filterInputIcon}>To:</Container>}
+            iconWidth={37}
+            className={classes.filterInput}
           />
         </Group>
       </Stack>
