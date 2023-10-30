@@ -6,8 +6,8 @@ import { RoutePath } from '../../../../../../../routes';
 import { Link } from '../../../../../../../components';
 
 const links = [
-  { link: RoutePath.Marketplace, label: 'Marketplace' },
-  { link: RoutePath.YourProducts, label: 'Your Products' },
+  { paths: [RoutePath.Marketplace], label: 'Marketplace' },
+  { paths: [RoutePath.YourProducts, RoutePath.YourProductsCreate], label: 'Your Products' },
 ];
 
 const Shell = () => {
@@ -18,11 +18,11 @@ const Shell = () => {
   return (
     <Container className={classes.shell}>
       {links.map((link) => {
-        const isActive = pathname === link.link;
+        const isActive = link.paths.includes(pathname as RoutePath);
         return (
           <Link
             key={link.label}
-            href={link.link}
+            href={link.paths[0]}
             type="router"
             underline={false}
           >

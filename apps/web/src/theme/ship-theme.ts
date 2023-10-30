@@ -43,8 +43,8 @@ function getButtonRootStyles(
     } else if (contextVariant === 'outline') {
       colorsParams = {
         backgroundColor: 'transparent',
-        borderColor: theme.colors.gray[2],
-        color: theme.colors.gray[4],
+        borderColor: theme.colors.gray[4],
+        color: theme.colors.gray[7],
         '&:hover:not([data-disabled]):not(:active)': theme.fn.hover({
           backgroundColor: 'transparent',
           borderColor: theme.colors.blue[5],

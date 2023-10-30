@@ -1,9 +1,10 @@
 import { createStyles, getStylesRef } from '@mantine/core';
 
-const BROWSE_BTN_SIZE = '88px';
+const BROWSE_BTN_SIZE = '11.25rem';
 
 export const useStyles = createStyles(({
   colors,
+  white,
   primaryColor,
   other: {
     transition: { speed, easing },
@@ -11,16 +12,14 @@ export const useStyles = createStyles(({
 }) => ({
   dropzoneRoot: {
     border: 'none',
-    borderRadius: 0,
+    borderRadius: '1.25rem',
     padding: 0,
+    margin: 0,
     backgroundColor: 'transparent',
+    overflow: 'hidden',
 
     [`&:hover .${getStylesRef('addIcon')}`]: {
       color: colors.gray[5],
-    },
-
-    [`&:hover .${getStylesRef('browseButton')}`]: {
-      border: `1px dashed ${colors.gray[5]}`,
     },
 
     [`&:hover .${getStylesRef('innerAvatar')}`]: {
@@ -31,16 +30,15 @@ export const useStyles = createStyles(({
     ref: getStylesRef('browseButton'),
     width: BROWSE_BTN_SIZE,
     height: BROWSE_BTN_SIZE,
-    borderRadius: '50%',
-    border: `1px dashed ${colors[primaryColor][6]}`,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     transition: `all ${speed.fast} ${easing.easeInOut}`,
     cursor: 'pointer',
+    fontSize: '5rem',
   },
   error: {
-    border: `1px dashed ${colors.red[5]}`,
+    border: `.25rem dashed ${colors.red[5]}`,
   },
   addIcon: {
     ref: getStylesRef('addIcon'),
@@ -51,7 +49,6 @@ export const useStyles = createStyles(({
     ref: getStylesRef('innerAvatar'),
     width: BROWSE_BTN_SIZE,
     height: BROWSE_BTN_SIZE,
-    borderRadius: '50%',
     background: '#10101099',
     display: 'flex',
     justifyContent: 'center',
@@ -59,6 +56,10 @@ export const useStyles = createStyles(({
     color: colors.gray[2],
     opacity: 0,
     transition: `all ${speed.smooth} ${easing.easeInOut}`,
+    '& > *': {
+      width: '2.5rem',
+      height: '2.5rem',
+    },
   },
   text: {
     width: '144px',
@@ -71,7 +72,7 @@ export const useStyles = createStyles(({
     alignItems: 'center',
   },
   errorMessage: {
-    marginTop: '4px',
+    marginTop: '10px',
     fontSize: '14px',
     lineHeight: '17px',
     color: colors.red[5],
@@ -82,6 +83,29 @@ export const useStyles = createStyles(({
     backgroundPosition: 'center',
     backgroundSize: 'cover',
     backgroundRepeat: 'no-repeat',
-    borderRadius: '50%',
+  },
+  imageDropzoneContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '1rem',
+    padding: 0,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: '1rem',
+    right: '1rem',
+    display: 'flex',
+    width: '2rem',
+    height: '2rem',
+    padding: '0.375rem',
+    'justify-content': 'center',
+    'align-items': 'center',
+    gap: '0.625rem',
+    'border-radius': '0.5rem',
+    background: white,
+    'flex-shrink': 0,
   },
 }));

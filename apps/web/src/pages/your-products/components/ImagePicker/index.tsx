@@ -1,7 +1,7 @@
-import { FC, memo, useState } from 'react';
-import { Button, Group, Image, Text } from '@mantine/core';
+import React, { FC, memo, useRef, useState } from 'react';
+import { ActionIcon, Button, Container, Image } from '@mantine/core';
 import { Dropzone, FileWithPath } from '@mantine/dropzone';
-import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
+import { IconPencil, IconPlus } from '@tabler/icons-react';
 
 import { useStyles } from './styles';
 
@@ -20,7 +20,9 @@ const ImagePicker: FC<IImagePickerProps> = ({
   const [imageUrl, setImageUrl] = useState<string>();
   const [isImageDropzoneLoading, setIsImageDropzoneLoading] = useState<boolean>(false);
 
-  const { classes } = useStyles();
+  const openRef = useRef<() => void>(() => {});
+
+  const { classes, cx } = useStyles();
 
   const isFileSizeCorrect = (file: FileWithPath) => {
     const oneMBinBytes = 1048576;
@@ -56,83 +58,69 @@ const ImagePicker: FC<IImagePickerProps> = ({
   };
 
   return (
-    <>
-      <Dropzone
-        name="imageUrl"
-        accept={['image/png', 'image/jpg', 'image/jpeg']}
-        onDrop={handlePhotoUpload}
-        loading={isImageDropzoneLoading}
-        multiple={false}
-      >
-        <Group>
-          <Dropzone.Accept>
-            <IconUpload
-              style={{
-                width: '5rem',
-                height: '5rem',
-                color: '#4664b2',
-                margin: 'auto',
+    <Container sx={{ margin: 0, padding: 0 }}>
+      <Container className={classes.imageDropzoneContainer}>
+        <Container sx={{ padding: 0, position: 'relative' }}>
+          <Dropzone
+            name="imageUrl"
+            accept={['image/png', 'image/jpg', 'image/jpeg']}
+            onDrop={handlePhotoUpload}
+            loading={isImageDropzoneLoading}
+            multiple={false}
+            openRef={openRef}
+            classNames={{
+              root: classes.dropzoneRoot,
+            }}
+          >
+            <label
+              className={cx(classes.browseButton, {
+                [classes.error]: errorMessage,
+              })}
+            >
+              {imageUrl || defaultImage ? (
+                <div
+                  className={classes.avatar}
+                  style={{
+                    backgroundImage: `url(${imageUrl || defaultImage})`,
+                  }}
+                >
+                  <div className={classes.innerAvatar}>
+                    <IconPencil />
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={classes.avatar}
+                  style={{
+                    backgroundImage: 'url("../images/default-image.svg")',
+                  }}
+                >
+                  <div className={classes.innerAvatar}>
+                    <IconPlus />
+                  </div>
+                </div>
+              )}
+            </label>
+          </Dropzone>
+          {(imageUrl || defaultImage) && (
+            <ActionIcon
+              className={classes.deleteButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlerImageRemove();
               }}
-              stroke={1.5}
-            />
-          </Dropzone.Accept>
-          <Dropzone.Reject>
-            <IconX
-              style={{
-                width: '5rem',
-                height: '5rem',
-                color: '#b24646',
-                margin: 'auto',
-              }}
-              stroke={1.5}
-            />
-          </Dropzone.Reject>
-          <Dropzone.Idle>
-            {imageUrl || defaultImage ? (
-              <Image
-                src={imageUrl || defaultImage}
-                onLoad={() => {
-                  if (imageUrl) URL.revokeObjectURL(imageUrl);
-                }}
-                height="10em"
-              />
-            ) : (
-              <IconPhoto
-                style={{
-                  width: '5rem',
-                  height: '5rem',
-                  color: '#858484',
-                  margin: 'auto',
-                }}
-                stroke={1.5}
-              />
-            )}
-          </Dropzone.Idle>
-
-          <div>
-            <Text size="xl" inline align="center">
-              Drag images here or click to select files
-            </Text>
-            <Text size="sm" c="dimmed" inline mt={7} align="center">
-              Image should not exceed 2MB
-            </Text>
-          </div>
-        </Group>
-      </Dropzone>
-      {(imageUrl || defaultImage) && (
-        <Button
-          variant="subtle"
-          onClick={handlerImageRemove}
-          size="sm"
-        >
-          Remove
-        </Button>
-      )}
+            >
+              <Image src="../images/trash-can.svg" width="1.5rem" height="1.5rem" />
+            </ActionIcon>
+          )}
+        </Container>
+        <Button variant="outline" onClick={() => openRef.current()}>Upload Photo</Button>
+      </Container>
       {!!errorMessage && <p className={classes.errorMessage}>{errorMessage}</p>}
       {!!formErrorMessage && (
         <p className={classes.errorMessage}>{formErrorMessage}</p>
       )}
-    </>
+    </Container>
   );
 };
 
