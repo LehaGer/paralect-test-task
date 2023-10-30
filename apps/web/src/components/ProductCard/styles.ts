@@ -92,4 +92,23 @@ export const useStyles = createStyles(({ white }: MantineTheme) => ({
     display: 'flex',
     flex: '1 0 0',
   },
+  deleteButton: {
+    display: 'flex',
+    width: '2rem',
+    height: '2rem',
+    padding: '0.375rem',
+    'justify-content': 'center',
+    'align-items': 'center',
+    gap: '0.625rem',
+    position: 'absolute',
+    right: '1rem',
+    top: '1rem',
+    'border-radius': '0.5rem',
+    background: white,
+    'flex-shrink': 0,
+  },
+  // minimised: {
+  //   width: '16.9375rem',
+  //   height: '16.625rem',
+  // },
 }));

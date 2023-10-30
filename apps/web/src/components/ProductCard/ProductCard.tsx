@@ -6,7 +6,7 @@ import {
   Container,
   Flex,
   Image,
-  Group,
+  Group, ActionIcon,
 } from '@mantine/core';
 
 import { useStyles } from './styles';
@@ -16,8 +16,6 @@ interface IProductCard {
   name?: string;
   price?: number;
   isOwn?: boolean;
-  isCartItem?: boolean;
-  isHistoryItem?: boolean;
   addToCart?: () => void;
   removeFromCart?: () => void;
   removeCard?: () => void;
@@ -29,8 +27,6 @@ const ProductCard: FC<IProductCard> = ({
   name,
   price,
   isOwn = false,
-  isCartItem = false,
-  isHistoryItem = false,
   addToCart = () => {},
   removeCard = () => {},
   removeFromCart = () => {},
@@ -50,38 +46,28 @@ const ProductCard: FC<IProductCard> = ({
             <Container className={classes.price}>{`$${price}`}</Container>
           </Flex>
         </Container>
-        <Container className={classes.buttonSection}>
-          {isHistoryItem && null}
-          {isCartItem && (
-            <Button className={classes.button} variant="light" color="gray" size="sm" onClick={removeFromCart}>
-              Remove from cart
-            </Button>
-          )}
-          {isOwn && (
-            <Button className={classes.button} variant="light" color="red" size="sm" onClick={removeCard}>
-              Delete
-            </Button>
-          )}
-          {!isHistoryItem && !isCartItem && !isOwn && (
-            <Group grow spacing="xs">
-              {isInCart ? (
-                <Button
-                  className={classes.button}
-                  sx={() => ({
-                    backgroundColor: '#72A5F4',
-                  })}
-                  onClick={removeFromCart}
-                >
-                  In Cart
-                </Button>
-              ) : (
-                <Button className={classes.button} onClick={addToCart}>
-                  Add to Cart
-                </Button>
-              )}
-            </Group>
-          )}
-        </Container>
+        {isOwn && (
+          <ActionIcon className={classes.deleteButton} onClick={removeCard}>
+            <Image src="../images/trash-can.svg" width="1.5rem" height="1.5rem" />
+          </ActionIcon>
+        )}
+        {!isOwn && (
+          <Group grow spacing="xs" className={classes.buttonSection}>
+            {isInCart ? (
+              <Button
+                className={classes.button}
+                sx={{ backgroundColor: '#72A5F4' }}
+                onClick={removeFromCart}
+              >
+                In Cart
+              </Button>
+            ) : (
+              <Button className={classes.button} onClick={addToCart}>
+                Add to Cart
+              </Button>
+            )}
+          </Group>
+        )}
       </Card.Section>
     </Card>
   );

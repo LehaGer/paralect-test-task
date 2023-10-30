@@ -9,9 +9,8 @@ import {
   Stack,
   TextInput,
   LoadingOverlay,
-  Pagination,
+  Pagination, Container,
 } from '@mantine/core';
-import { IconPlus } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +23,7 @@ import { handleError } from 'utils';
 import { productApi, productTypes } from 'resources/product';
 import ImagePicker from './components/ImagePicker';
 import { useStyles } from './styles';
+import AddNewCardButton from './components/AddNewCardButton';
 
 const schema = z.object({
   name: z.string().min(1).max(36, 'Name can not contain more then 36 symbols.'),
@@ -59,7 +59,7 @@ const YourProducts: NextPage = () => {
     register('imageUrl');
   }, [register]);
 
-  const [params, setParams] = useState<productTypes.ProductsListParams>({});
+  const [params, setParams] = useState<productTypes.ProductsListParams>({ perPage: 9 });
 
   const {
     data: productListResp,
@@ -150,6 +150,9 @@ const YourProducts: NextPage = () => {
 
   return (
     <>
+      <Container className={classes.pageName}>
+        Your Products
+      </Container>
       <Flex
         gap="md"
         justify="center"
@@ -157,12 +160,12 @@ const YourProducts: NextPage = () => {
         direction="row"
         wrap="wrap"
       >
-        {isProductListLoading
-            && (
-            <Center>
-              <Loader color="blue" />
-            </Center>
-            )}
+        {isProductListLoading && (
+          <Center>
+            <Loader color="blue" />
+          </Center>
+        )}
+        <AddNewCardButton onClick={openModal} />
         {productListResp?.items.map((product) => (
           <ProductCard
             isOwn
@@ -182,19 +185,13 @@ const YourProducts: NextPage = () => {
             )}
       </Flex>
       <Center className={classes.paginationSection}>{renderPagination()}</Center>
-      <Center className={classes.addNewProductBtn}>
-        <Button onClick={openModal}>
-          <IconPlus />
-          Add new product
-        </Button>
-      </Center>
       <Modal
         opened={isModalOpen}
         onClose={() => {
           if (Number.isNaN(getValues('price'))) resetField('price');
           return closeModal();
         }}
-        title="Add new card"
+        title="Create new product"
         centered
       >
         <LoadingOverlay visible={isCreateProductFormLoading} overlayBlur={2} />
@@ -207,8 +204,8 @@ const YourProducts: NextPage = () => {
             />
             <TextInput
               {...register('name')}
-              label="Product Name"
-              placeholder="Product Name"
+              label="Title of the product"
+              placeholder="Enter title of the product..."
               error={errors.name?.message}
             />
             <NumberInput
@@ -225,8 +222,8 @@ const YourProducts: NextPage = () => {
               max={Number(register('price', { valueAsNumber: true }).max)}
               min={Number(register('price', { valueAsNumber: true }).min)}
               hideControls
-              label="Price (USD)"
-              placeholder="Price"
+              label="Price"
+              placeholder="Enter price of the product"
               error={errors.price?.message}
             />
           </Stack>
@@ -235,7 +232,7 @@ const YourProducts: NextPage = () => {
             fullWidth
             mt={34}
           >
-            Create Product
+            Upload Product
           </Button>
         </form>
       </Modal>

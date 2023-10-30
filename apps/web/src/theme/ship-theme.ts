@@ -172,6 +172,9 @@ const shipTheme: MantineThemeOverride = {
             borderColor: theme.colors.red[6],
           },
         },
+        error: {
+          fontSize: '14px',
+        },
       }),
     },
     PasswordInput: {
@@ -244,6 +247,9 @@ const shipTheme: MantineThemeOverride = {
             // },
           },
         },
+        error: {
+          fontSize: '14px',
+        },
       }),
     },
     NumberInput: {
@@ -311,6 +317,9 @@ const shipTheme: MantineThemeOverride = {
           '&, &:focus-within': {
             borderColor: theme.colors.red[6],
           },
+        },
+        error: {
+          fontSize: '14px',
         },
       }),
     },
