@@ -19,16 +19,15 @@ eventBus.on(`${USERS}.updated`, (data: InMemoryEvent<User>) => {
   }
 });
 
-eventBus.onUpdated(USERS, ['firstName', 'lastName'], async (data: InMemoryEvent<User>) => {
+eventBus.onUpdated(USERS, ['email'], async (data: InMemoryEvent<User>) => {
   try {
     const user = data.doc;
-    const fullName = user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName;
 
     await userService.atomic.updateOne(
       { _id: user._id },
-      { $set: { fullName } },
+      { $set: { email: user.email } },
     );
   } catch (err) {
-    logger.error(`${USERS} onUpdated ['firstName', 'lastName'] handler error: ${err}`);
+    logger.error(`${USERS} onUpdated ['email'] handler error: ${err}`);
   }
 });

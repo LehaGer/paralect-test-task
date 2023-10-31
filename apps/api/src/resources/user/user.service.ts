@@ -10,16 +10,14 @@ const service = db.createService<User>(DATABASE_DOCUMENTS.USERS, {
   schemaValidator: (obj) => schema.parseAsync(obj),
 });
 
-const updateLastRequest = (_id: string) => {
-  return service.atomic.updateOne(
-    { _id },
-    {
-      $set: {
-        lastRequest: new Date(),
-      },
+const updateLastRequest = (_id: string) => service.atomic.updateOne(
+  { _id },
+  {
+    $set: {
+      lastRequest: new Date(),
     },
-  );
-};
+  },
+);
 
 const privateFields = [
   'passwordHash',

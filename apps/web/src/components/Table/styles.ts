@@ -7,4 +7,7 @@ export const useStyles = createStyles((theme) => ({
     padding: '0 8px',
     borderColor: theme.colors.gray[4],
   },
+  table: {
+    backgroundColor: 'transparent',
+  },
 }));

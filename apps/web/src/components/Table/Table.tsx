@@ -5,7 +5,6 @@ import {
   Pagination,
   Group,
   Text,
-  Paper,
 } from '@mantine/core';
 import {
   ColumnDef,
@@ -22,6 +21,7 @@ import {
 
 import Thead from './thead';
 import Tbody from './tbody';
+import { useStyles } from './styles';
 
 type SpacingSizes = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -54,6 +54,7 @@ const Table: FC<TableProps> = ({
   page,
   perPage,
 }) => {
+  const { classes } = useStyles();
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: page || 1,
     pageSize: perPage,
@@ -134,23 +135,22 @@ const Table: FC<TableProps> = ({
 
   return (
     <>
-      <Paper radius="sm" withBorder>
-        <TableContainer
-          horizontalSpacing={horizontalSpacing}
-          verticalSpacing={verticalSpacing}
-        >
-          <Thead
-            isSortable={isSortable}
-            headerGroups={table.getHeaderGroups()}
-            flexRender={flexRender}
-          />
-          <Tbody
-            isSelectable={isSelectable}
-            rows={table.getRowModel().rows}
-            flexRender={flexRender}
-          />
-        </TableContainer>
-      </Paper>
+      <TableContainer
+        horizontalSpacing={horizontalSpacing}
+        verticalSpacing={verticalSpacing}
+        className={classes.table}
+      >
+        <Thead
+          isSortable={isSortable}
+          headerGroups={table.getHeaderGroups()}
+          flexRender={flexRender}
+        />
+        <Tbody
+          isSelectable={isSelectable}
+          rows={table.getRowModel().rows}
+          flexRender={flexRender}
+        />
+      </TableContainer>
       <Group position="right">
         {dataCount && (
           <Text size="sm" color="dimmed">

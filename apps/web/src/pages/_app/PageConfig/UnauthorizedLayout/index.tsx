@@ -20,23 +20,34 @@ const UnauthorizedLayout: FC<UnauthorizedLayoutProps> = ({ children }) => {
       breakpoints={[
         { maxWidth: 'sm', cols: 1, spacing: 'sm' },
       ]}
+      className={classes.body}
     >
-      <MediaQuery
-        smallerThan="sm"
-        styles={{ display: 'none' }}
-      >
-        <Image
-          alt="app info"
-          src="../images/ship.svg"
-          height="100vh"
-        />
-      </MediaQuery>
 
       <div className={classes.wrapper}>
         <main className={classes.content}>
           {children}
         </main>
       </div>
+
+      <MediaQuery
+        smallerThan="sm"
+        styles={{ display: 'none' }}
+      >
+        <Image
+          alt="app info"
+          src="../images/intro.png"
+          height="95vh"
+          fit="contain"
+          sx={{
+            margin: 'auto 0em',
+            overflow: 'hidden',
+            width: '90%',
+            borderRadius: '2vh',
+            userSelect: 'none',
+            pointerEvents: 'none',
+          }}
+        />
+      </MediaQuery>
     </SimpleGrid>
   );
 };

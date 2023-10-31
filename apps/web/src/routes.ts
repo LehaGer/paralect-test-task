@@ -10,8 +10,15 @@ export enum LayoutType {
 
 export enum RoutePath {
   // Private paths
-  Home = '/',
+  Marketplace = '/',
   Profile = '/profile',
+  YourProducts = '/your-products',
+  YourProductsCreate = '/your-products/create',
+  Cart = '/cart',
+  MyCart = '/cart/my-cart',
+  History = '/cart/history',
+  PaymentSuccessful = '/payment-successful',
+  PaymentRejected = '/payment-rejected',
 
   // Auth paths
   SignIn = '/sign-in',
@@ -32,11 +39,39 @@ type RoutesConfiguration = {
 
 export const routesConfiguration: RoutesConfiguration = {
   // Private routes
-  [RoutePath.Home]: {
+  [RoutePath.Profile]: {
     scope: ScopeType.PRIVATE,
     layout: LayoutType.MAIN,
   },
-  [RoutePath.Profile]: {
+  [RoutePath.YourProducts]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.YourProductsCreate]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.Marketplace]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.Cart]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.MyCart]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.History]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.PaymentSuccessful]: {
+    scope: ScopeType.PRIVATE,
+    layout: LayoutType.MAIN,
+  },
+  [RoutePath.PaymentRejected]: {
     scope: ScopeType.PRIVATE,
     layout: LayoutType.MAIN,
   },

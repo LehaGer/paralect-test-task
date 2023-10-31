@@ -30,25 +30,13 @@ class EmailService {
       html,
     });
   }
-
-  /*async sendSendgridTemplate({ to, subject, templateId, dynamicTemplateData }: SendSendgridTemplateParams) {
-    if (!this.apiKey) return null;
-
-    return sendgrid.send({
-      from: this.from,
-      to,
-      subject,
-      templateId,
-      dynamicTemplateData,
-    });
-  }*/
 }
 
 
 export default new EmailService({
   apiKey: config.RESEND_API_KEY,
   from: {
-    email: 'notifications@resend.dev',
-    name: 'Ship',
+    email: config.RESEND_APP_EMAIL,
+    name: 'Shopy',
   },
 });

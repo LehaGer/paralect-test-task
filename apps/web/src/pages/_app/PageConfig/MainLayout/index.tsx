@@ -2,7 +2,6 @@ import { FC, ReactElement } from 'react';
 import { AppShell } from '@mantine/core';
 
 import Header from './Header';
-import Footer from './Footer';
 
 interface MainLayoutProps {
   children: ReactElement;
@@ -11,7 +10,7 @@ interface MainLayoutProps {
 const MainLayout: FC<MainLayoutProps> = ({ children }) => (
   <AppShell
     header={<Header />}
-    footer={<Footer />}
+    // footer={<Footer />}
     styles={(theme) => ({
       root: {
         display: 'flex',
@@ -20,8 +19,11 @@ const MainLayout: FC<MainLayoutProps> = ({ children }) => (
         backgroundColor: theme.colors.gray[0],
       },
       main: {
-        padding: '32px',
-        paddingTop: '104px',
+        padding: '32px 32px 1rem 32px',
+        paddingTop: '5.5rem',
+        '& > *': {
+          marginTop: 0,
+        },
       },
     })}
   >

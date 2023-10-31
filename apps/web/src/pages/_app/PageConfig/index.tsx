@@ -31,7 +31,7 @@ const PageConfig: FC<PageConfigProps> = ({ children }) => {
   const { route, push } = useRouter();
   const { data: account, isLoading: isAccountLoading } = accountApi.useGet({
     onSettled: () => {
-      if (!environmentConfig?.mixpanel?.apiKey) return null;
+      if (!environmentConfig.MIXPANEL_API_KEY) return null;
 
       analyticsService.init();
 
@@ -51,7 +51,7 @@ const PageConfig: FC<PageConfigProps> = ({ children }) => {
   }
 
   if (scope === ScopeType.PUBLIC && account) {
-    push(RoutePath.Home);
+    push(RoutePath.Marketplace);
     return null;
   }
 

@@ -9,8 +9,7 @@ import { userService } from 'resources/user';
 import { passwordRegex } from 'resources/account/account.constants';
 
 const schema = z.object({
-  firstName: z.string().min(1, 'Please enter First name').max(100).optional(),
-  lastName: z.string().min(1, 'Please enter Last name').max(100).optional(),
+  email: z.string().email().optional(),
   password: z.string().regex(passwordRegex, 'The password must contain 6 or more characters with at least one letter (a-z) and one number (0-9).').optional(),
 }).strict();
 
