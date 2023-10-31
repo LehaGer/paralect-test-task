@@ -21,7 +21,7 @@ const PaymentSuccessful: NextPage = () => {
           Hooray, you have completed your payment!
         </Container>
       </Container>
-      <Link type="router" href={RoutePath.Cart}>
+      <Link type="router" href={RoutePath.MyCart}>
         <Button className={classes.button}>Back to Cart</Button>
       </Link>
     </Container>

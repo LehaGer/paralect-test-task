@@ -22,7 +22,7 @@ const PaymentRejected: NextPage = () => {
           Would you like to try again?
         </Container>
       </Container>
-      <Link type="router" href={RoutePath.Cart}>
+      <Link type="router" href={RoutePath.MyCart}>
         <Button className={classes.button}>Back to Cart</Button>
       </Link>
     </Container>
