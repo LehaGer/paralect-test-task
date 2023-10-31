@@ -263,53 +263,46 @@ const Marketplace: NextPage = () => {
                 )}
               </Flex>
             </Stack>
-            <Skeleton
-              radius="md"
-              visible={isProductListLoading}
-              width="auto"
-              mih={350}
+            <Flex
+              gap="md"
+              justify="center"
+              align="center"
+              direction="row"
+              wrap="wrap"
             >
-              <Flex
-                gap="md"
-                justify="center"
-                align="center"
-                direction="row"
-                wrap="wrap"
-              >
-                {productListResp?.items.map((product) => (
-                  <ProductCard
-                    key={product._id}
-                    price={product.price}
-                    name={product.name}
-                    imageUrl={product.imageUrl}
-                    isInCart={cart?.productIds.includes(product._id)}
-                    addToCart={() => {
-                      addToCart({ productId: product._id });
-                    }}
-                    removeFromCart={() => {
-                      removeFromCart({ productId: product._id });
-                    }}
-                  />
-                ))}
-                {!isProductListLoading && !productListResp?.items.length && (
-                  <Center className={classes.productsNotExistsMsg}>
-                    There no products in marketplace yet
-                  </Center>
-                )}
-              </Flex>
-            </Skeleton>
+              {isProductListLoading && Array(4).fill(null).map(() => (
+                <Skeleton
+                  radius="md"
+                  visible={isProductListLoading}
+                  width="20.03125rem"
+                  mih="23.40453rem"
+                />
+              ))}
+              {productListResp?.items.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  price={product.price}
+                  name={product.name}
+                  imageUrl={product.imageUrl}
+                  isInCart={cart?.productIds.includes(product._id)}
+                  addToCart={() => {
+                    addToCart({ productId: product._id });
+                  }}
+                  removeFromCart={() => {
+                    removeFromCart({ productId: product._id });
+                  }}
+                />
+              ))}
+              {!isProductListLoading && !productListResp?.items.length && (
+                <Center className={classes.productsNotExistsMsg}>
+                  There no products in marketplace yet
+                </Center>
+              )}
+            </Flex>
           </Stack>
         </Grid.Col>
       </Grid>
-      <Skeleton
-        radius="md"
-        visible={isProductListLoading}
-        width="auto"
-        height={42}
-        className={classes.paginationSection}
-      >
-        <Center>{renderPagination()}</Center>
-      </Skeleton>
+      <Center sx={{ marginTop: '2rem' }}>{renderPagination()}</Center>
     </Container>
   );
 };

@@ -23,5 +23,6 @@ export const useStyles = createStyles((theme: MantineTheme) => ({
     fontSize: '1.5em',
     color: theme.colors.gray[4],
     fontWeight: 'bold',
+    paddingTop: '4rem',
   },
 }));

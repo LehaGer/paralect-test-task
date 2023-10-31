@@ -14,7 +14,7 @@ const RightSection = () => {
 
   return (
     <Container className={classes.wrapper}>
-      <ActionIcon component={Link} href={RoutePath.Cart} type="router">
+      <ActionIcon component={Link} href={RoutePath.MyCart} type="router">
         <MyCartBanner />
       </ActionIcon>
       <ActionIcon onClick={() => signOut()} className={classes.iconWrapper}>

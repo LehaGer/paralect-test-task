@@ -2,8 +2,7 @@ import { NextPage } from 'next';
 import {
   Center,
   Flex,
-  Loader,
-  Pagination, Container,
+  Pagination, Container, Skeleton,
 } from '@mantine/core';
 import React, { useState } from 'react';
 import ProductCard from 'components/ProductCard/ProductCard';
@@ -62,14 +61,17 @@ const YourProducts: NextPage = () => {
         direction="row"
         wrap="wrap"
       >
-        {isProductListLoading && (
-          <Center>
-            <Loader color="blue" />
-          </Center>
-        )}
         <Link type="router" href={RoutePath.YourProductsCreate} underline={false}>
           <AddNewCardButton />
         </Link>
+        {isProductListLoading && Array(4).fill(null).map(() => (
+          <Skeleton
+            radius="md"
+            visible={isProductListLoading}
+            width="20.03125rem"
+            mih="23.40453rem"
+          />
+        ))}
         {productListResp?.items.map((product) => (
           <ProductCard
             isOwn
@@ -80,13 +82,6 @@ const YourProducts: NextPage = () => {
             removeCard={() => { removeCard(product._id); }}
           />
         ))}
-        {!isProductListLoading
-            && !productListResp?.items.length
-            && (
-            <Center className={classes.notExistsMsg}>
-              You have no own products yet
-            </Center>
-            )}
       </Flex>
       <Center className={classes.paginationSection}>{renderPagination()}</Center>
     </>

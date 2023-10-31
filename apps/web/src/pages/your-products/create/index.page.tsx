@@ -87,9 +87,10 @@ const Create: NextPage = () => {
           onSuccess: async () => {
             reset();
             resolve(undefined);
-            router.push(RoutePath.YourProducts);
+            router.push(RoutePath.YourProducts, undefined, { shallow: true });
           },
           onError: (e) => {
+            closeProductFormLoader();
             handleError(e, setError);
             reject();
           },
